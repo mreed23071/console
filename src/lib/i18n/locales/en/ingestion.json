@@ -1,28 +1,30 @@
 {
   "meta": {
-    "title": "Ingestion runs · Threadline Console",
+    "title": "Ingestion runs \u00b7 Threadline Console",
     "description": "Pipeline run history with fetch, filter, embed and persist counters and per-message decisions.",
     "ogDescription": "Every pipeline execution and its filtering decisions."
   },
   "title": "Ingestion runs",
   "description": "Every pipeline execution, its counters and filtering decisions.",
-  "searchPlaceholder": "Search runs…",
+  "searchPlaceholder": "Search runs\u2026",
   "emptyTitle": "No runs recorded",
   "emptyDescription": "Trigger an ingestion run to populate this history.",
   "trigger": {
     "action": "Trigger new run",
     "allowed": "Start a pipeline run",
     "denied": "Your role doesn't include the runs:write scope",
-    "success": "Run {{runId}} finished — {{count}} persisted",
+    "success": "Run {{runId}} finished \u2014 {{count}} persisted",
     "error": "Run failed"
   },
   "progress": {
-    "inProgress": "Run in progress — {{step}}",
-    "stepOf": "step {{current}} of {{total}}"
+    "inProgress": "Run in progress \u2014 {{step}}",
+    "stepOf": "step {{current}} of {{total}}",
+    "counts": "{{filtered}}/{{evaluated}} filtered \u00b7 {{embedded}} embedded",
+    "queued": "Run queued \u2014 waiting for a worker"
   },
   "step": {
+    "queued": "Queued",
     "fetching": "Fetching",
-    "deduplicating": "Deduplicating",
     "filtering": "Filtering",
     "embedding": "Embedding",
     "persisting": "Persisting",

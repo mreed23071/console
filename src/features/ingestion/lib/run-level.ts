@@ -12,14 +12,28 @@ export function runLevel(status: IngestionRun["status"], filterErrors = 0): Stat
   return "good";
 }
 
-/** Ordered pipeline stages, as translation keys into the `ingestion` namespace. */
-export const RUN_STEP_KEYS = [
-  "step.fetching",
-  "step.deduplicating",
-  "step.filtering",
-  "step.embedding",
-  "step.persisting",
-  "step.done",
+/**
+ * Ordered pipeline stages, as translation keys into the `ingestion` namespace.
+ *
+ * The identifiers match the `stage` the workflow reports, so progress shown in
+ * the console is the stage actually executing rather than a timer. Keep this
+ * list in step with `IngestionWorkflow` in the API.
+ */
+export const RUN_STAGES = [
+  "queued",
+  "fetching",
+  "filtering",
+  "embedding",
+  "persisting",
+  "done",
 ] as const;
 
-export const RUN_STEP_COUNT = RUN_STEP_KEYS.length;
+export type RunStage = (typeof RUN_STAGES)[number];
+
+export const RUN_STEP_KEYS = RUN_STAGES.map((stage) => `step.${stage}`);
+export const RUN_STEP_COUNT = RUN_STAGES.length;
+
+/** Where a reported stage sits in the sequence; -1 when it is unrecognised. */
+export function stageIndex(stage: string): number {
+  return RUN_STAGES.indexOf(stage as RunStage);
+}

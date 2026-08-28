@@ -20,7 +20,7 @@ import {
   useIngestionRuns,
   useRunColumnLabels,
   useRunColumns,
-  useSimulatedRun,
+  useTrackedRun,
 } from "@/features/ingestion";
 import type { IngestionRun, Platform } from "@/lib/api/types";
 import { i18n } from "@/lib/i18n";
@@ -49,10 +49,8 @@ function RunsPage() {
   const columnLabels = useRunColumnLabels();
 
   const [selected, setSelected] = useState<IngestionRun | null>(null);
-  const [step, setStep] = useState<number | null>(null);
   const [triggerPlatform, setTriggerPlatform] = useState<Platform>("slack");
-
-  useSimulatedRun(step, setStep, triggerPlatform);
+  const run = useTrackedRun(triggerPlatform);
 
   return (
     <div>
@@ -64,7 +62,7 @@ function RunsPage() {
             <Select
               value={triggerPlatform}
               onValueChange={(v) => setTriggerPlatform(v as Platform)}
-              disabled={step !== null}
+              disabled={run.running}
             >
               <SelectTrigger className="w-[140px]" aria-label={t("column.platform")}>
                 <SelectValue />
@@ -77,12 +75,12 @@ function RunsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <TriggerRunButton running={step !== null} onStart={() => setStep(0)} />
+            <TriggerRunButton running={run.running || run.isQueueing} onStart={run.start} />
           </div>
         }
       />
 
-      {step !== null && <RunProgress step={step} />}
+      {run.progress && run.running && <RunProgress progress={run.progress} />}
 
       {runs.isError ? (
         <ErrorState onRetry={() => runs.refetch()} />

@@ -1,39 +1,64 @@
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Progress } from "@/components/ui/progress";
-import { RUN_STEP_COUNT, RUN_STEP_KEYS } from "@/features/ingestion/lib/run-level";
+import { RUN_STAGES, RUN_STEP_COUNT, stageIndex } from "@/features/ingestion/lib/run-level";
+import type { RunProgress as RunProgressState } from "@/lib/api/types";
 
-/** Simulated pipeline progress shown while a triggered run is in flight. */
-export function RunProgress({ step }: { step: number }) {
+/**
+ * Real pipeline progress, reported by the running workflow.
+ *
+ * This used to animate a timer through invented steps because the API had
+ * nothing to say until a run finished. Every number here now comes from the
+ * workflow itself.
+ */
+export function RunProgress({ progress }: { progress: RunProgressState }) {
   const { t } = useTranslation("ingestion");
+
+  const current = stageIndex(progress.stage);
+  // An unrecognised stage (the API grew one the console does not know yet)
+  // should show as "just started" rather than crash or render as complete.
+  const position = current < 0 ? 0 : current;
 
   return (
     <div className="mb-6 rounded-lg border bg-card p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-medium">
-          {t("progress.inProgress", { step: t(RUN_STEP_KEYS[step]! as never) })}
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-2 text-sm font-medium">
+          <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          {progress.status === "queued"
+            ? t("progress.queued")
+            : t("progress.inProgress", { step: t(`step.${progress.stage}` as never) })}
         </p>
         <p className="tnum text-xs text-muted-foreground">
-          {t("progress.stepOf", { current: step + 1, total: RUN_STEP_COUNT })}
+          {t("progress.stepOf", { current: position + 1, total: RUN_STEP_COUNT })}
         </p>
       </div>
 
-      <Progress value={((step + 1) / RUN_STEP_COUNT) * 100} />
+      <Progress value={((position + 1) / RUN_STEP_COUNT) * 100} />
 
       <ul className="mt-3 flex flex-wrap gap-3 text-xs">
-        {RUN_STEP_KEYS.map((key, i) => (
+        {RUN_STAGES.map((stage, i) => (
           <li
-            key={key}
+            key={stage}
             className={
-              i <= step ? "flex items-center gap-1 text-foreground" : "text-muted-foreground"
+              i <= position ? "flex items-center gap-1 text-foreground" : "text-muted-foreground"
             }
           >
-            {i < step && <CheckCircle2 className="size-3.5 text-status-good" />}
-            {t(key as never)}
+            {i < position && <CheckCircle2 className="size-3.5 text-status-good" />}
+            {t(`step.${stage}` as never)}
           </li>
         ))}
       </ul>
+
+      {progress.evaluated > 0 && (
+        <p className="tnum mt-3 text-xs text-muted-foreground">
+          {t("progress.counts", {
+            filtered: progress.filtered,
+            evaluated: progress.evaluated,
+            embedded: progress.embedded,
+          })}
+        </p>
+      )}
     </div>
   );
 }

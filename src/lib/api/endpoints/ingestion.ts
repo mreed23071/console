@@ -1,5 +1,5 @@
 import { ingestionConfig, ingestionRuns } from "../mock";
-import type { IngestionConfig, IngestionRun, Platform } from "../types";
+import type { IngestionConfig, IngestionRun, Platform, QueuedRun, RunProgress } from "../types";
 import { delay } from "./_shared";
 
 export interface TriggerRunOptions {
@@ -12,11 +12,18 @@ export async function getIngestionRuns(platform?: Platform): Promise<IngestionRu
   return platform ? ingestionRuns.filter((r) => r.platform === platform) : [...ingestionRuns];
 }
 
-/** POST /api/v1/ingestion/runs/{platform} */
+/**
+ * POST /api/v1/ingestion/runs/{platform}
+ *
+ * The real API queues the run and answers 202. The mock completes it
+ * immediately and reports it as already finished, which keeps the polling
+ * caller working without a fake clock: the first `getRunStatus` sees a
+ * terminal status and stops.
+ */
 export async function triggerIngestionRun(
   platform: Platform,
   options: TriggerRunOptions = {},
-): Promise<IngestionRun> {
+): Promise<QueuedRun> {
   await delay(600);
   const previous = ingestionRuns[0]!;
   const started = Date.now() - 42_000;
@@ -44,7 +51,43 @@ export async function triggerIngestionRun(
     status: "success",
   };
   ingestionRuns.unshift(run);
-  return run;
+  return {
+    run_id: run.run_id,
+    platform,
+    status: "completed",
+    workflow_id: `mock-${run.run_id}`,
+    dry_run: run.dry_run,
+  };
+}
+
+/** GET /api/v1/ingestion/runs/{platform}/{run_id} */
+export async function getRunStatus(platform: Platform, runId: string): Promise<RunProgress> {
+  await delay(120);
+  const run = ingestionRuns.find((r) => r.run_id === runId);
+  if (!run) {
+    return {
+      run_id: runId,
+      status: "failed",
+      stage: "unknown",
+      fetched: 0,
+      evaluated: 0,
+      filtered: 0,
+      embedded: 0,
+      persisted: 0,
+      result: null,
+    };
+  }
+  return {
+    run_id: runId,
+    status: "completed",
+    stage: "done",
+    fetched: run.fetched,
+    evaluated: run.evaluated,
+    filtered: run.decisions.length,
+    embedded: run.embedded,
+    persisted: run.persisted,
+    result: run,
+  };
 }
 
 /** GET /api/v1/ingestion/config/{platform} */

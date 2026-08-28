@@ -85,6 +85,7 @@ export const removeOrgMember = api.removeOrgMember;
 export const getConnectors = api.getConnectors;
 export const getIngestionRuns = api.getIngestionRuns;
 export const triggerIngestionRun = api.triggerIngestionRun;
+export const getRunStatus = api.getRunStatus;
 export const getIngestionConfig = api.getIngestionConfig;
 export const getHealth = api.getHealth;
 export const getReadiness = api.getReadiness;

@@ -119,6 +119,28 @@ export interface IngestionRun {
   decisions: RunDecision[];
 }
 
+/** What a trigger returns now that runs are queued rather than awaited. */
+export interface QueuedRun {
+  run_id: string;
+  platform: Platform;
+  status: string;
+  workflow_id: string;
+  dry_run: boolean;
+}
+
+/** A run in flight, or its final counters. Polled until `status` is terminal. */
+export interface RunProgress {
+  run_id: string;
+  status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  stage: string;
+  fetched: number;
+  evaluated: number;
+  filtered: number;
+  embedded: number;
+  persisted: number;
+  result: IngestionRun | null;
+}
+
 export interface IngestionConfig {
   platform: Platform;
   filter_system_prompt: string;

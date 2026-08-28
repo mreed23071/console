@@ -26,7 +26,9 @@ import type {
   PersonNote,
   PersonWithMeta,
   Platform,
+  QueuedRun,
   ReadinessResponse,
+  RunProgress,
   Summary,
   SummaryRange,
 } from "../../types";
@@ -225,10 +227,20 @@ export const getConnectors = (): Promise<Connector[]> => get<Connector[]>("/conn
 export const getIngestionRuns = (platform?: Platform): Promise<IngestionRun[]> =>
   get<IngestionRun[]>("/ingestion/runs", { platform });
 
+/**
+ * Queues a run; it does not wait for one.
+ *
+ * The API answers 202 with a `run_id`. Against a local model a run takes
+ * minutes, so the result is polled via `getRunStatus` rather than awaited on
+ * an open connection.
+ */
 export const triggerIngestionRun = (
   platform: Platform,
   options: TriggerRunOptions = {},
-): Promise<IngestionRun> => post<IngestionRun>(`/ingestion/runs/${platform}`, options);
+): Promise<QueuedRun> => post<QueuedRun>(`/ingestion/runs/${platform}`, options);
+
+export const getRunStatus = (platform: Platform, runId: string): Promise<RunProgress> =>
+  get<RunProgress>(`/ingestion/runs/${platform}/${runId}`);
 
 export const getIngestionConfig = (platform: Platform): Promise<IngestionConfig> =>
   get<IngestionConfig>(`/ingestion/config/${platform}`);
