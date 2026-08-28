@@ -64,7 +64,8 @@
     "github": "GitHub",
     "teams": "Teams",
     "email": "Email",
-    "linear": "Linear"
+    "linear": "Linear",
+    "other": "Other"
   },
   "time": {
     "justNow": "just now",

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import { CategoryBadge } from "@/components/common/category-badge";
+import { PlatformBadge } from "@/components/common/platform-icon";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -50,6 +51,7 @@ export function RunDetailSheet({
         {run && (
           <div className="space-y-5 overflow-y-auto px-4 pb-6">
             <div className="flex flex-wrap gap-2">
+              {run.platform && <PlatformBadge platform={run.platform} />}
               <StatusBadge
                 level={runLevel(run.status, run.filter_errors)}
                 label={t(`status.${run.status}` as never)}

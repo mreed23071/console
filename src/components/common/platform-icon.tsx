@@ -1,4 +1,4 @@
-import { Github, Hash, Mail, MessageSquare, SquareKanban } from "lucide-react";
+import { Github, Hash, Mail, MessageSquare, Plug, SquareKanban } from "lucide-react";
 
 import { usePlatformLabels } from "@/components/common/platform";
 import type { Platform } from "@/lib/api/types";
@@ -10,6 +10,7 @@ const ICONS = {
   teams: MessageSquare,
   email: Mail,
   linear: SquareKanban,
+  other: Plug,
 } as const;
 
 export function PlatformIcon({ platform, className }: { platform: Platform; className?: string }) {

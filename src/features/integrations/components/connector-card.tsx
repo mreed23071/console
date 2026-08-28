@@ -72,7 +72,7 @@ export function ConnectorCard({
                   disabled={!canRun || trigger.isPending}
                   onClick={() =>
                     trigger.mutate(
-                      {},
+                      { platform: connector.platform },
                       {
                         onSuccess: (run) =>
                           toast.success(

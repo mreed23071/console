@@ -1,4 +1,4 @@
-export type Platform = "slack" | "github" | "teams" | "email" | "linear";
+export type Platform = "slack" | "github" | "teams" | "email" | "linear" | "other";
 export type FilterCategory = "business" | "personal" | "automated" | "unclear";
 export type RunStatus = "success" | "partial" | "failed";
 
@@ -102,6 +102,8 @@ export interface IngestionRun {
   finished_at: string;
   duration_ms: number;
   dry_run: boolean;
+  /** Null only for runs recorded before ingestion was split per platform. */
+  platform: Platform | null;
   fetched: number;
   already_ingested: number;
   evaluated: number;
@@ -118,6 +120,7 @@ export interface IngestionRun {
 }
 
 export interface IngestionConfig {
+  platform: Platform;
   filter_system_prompt: string;
   llm_provider: string;
   embedding_model: string;

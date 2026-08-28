@@ -4,7 +4,15 @@ import { useTranslation } from "react-i18next";
 
 import { DataTable } from "@/components/common/data-table";
 import { ErrorState } from "@/components/common/error-state";
+import { usePlatformLabels } from "@/components/common/platform";
 import { PageHeader } from "@/components/layout/page-header";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   RunDetailSheet,
   RunProgress,
@@ -14,8 +22,12 @@ import {
   useRunColumns,
   useSimulatedRun,
 } from "@/features/ingestion";
-import type { IngestionRun } from "@/lib/api/types";
+import type { IngestionRun, Platform } from "@/lib/api/types";
 import { i18n } from "@/lib/i18n";
+
+//: Mirrors the backend's connector registry - only these three platforms
+//: have a mock source wired up, so triggering any other would just 404.
+const TRIGGERABLE_PLATFORMS: Platform[] = ["slack", "github", "teams"];
 
 export const Route = createFileRoute("/_authenticated/runs")({
   head: () => ({
@@ -31,21 +43,43 @@ export const Route = createFileRoute("/_authenticated/runs")({
 
 function RunsPage() {
   const { t } = useTranslation("ingestion");
+  const platformLabels = usePlatformLabels();
   const runs = useIngestionRuns();
   const columns = useRunColumns();
   const columnLabels = useRunColumnLabels();
 
   const [selected, setSelected] = useState<IngestionRun | null>(null);
   const [step, setStep] = useState<number | null>(null);
+  const [triggerPlatform, setTriggerPlatform] = useState<Platform>("slack");
 
-  useSimulatedRun(step, setStep);
+  useSimulatedRun(step, setStep, triggerPlatform);
 
   return (
     <div>
       <PageHeader
         title={t("title")}
         description={t("description")}
-        actions={<TriggerRunButton running={step !== null} onStart={() => setStep(0)} />}
+        actions={
+          <div className="flex items-center gap-2">
+            <Select
+              value={triggerPlatform}
+              onValueChange={(v) => setTriggerPlatform(v as Platform)}
+              disabled={step !== null}
+            >
+              <SelectTrigger className="w-[140px]" aria-label={t("column.platform")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TRIGGERABLE_PLATFORMS.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {platformLabels[p]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <TriggerRunButton running={step !== null} onStart={() => setStep(0)} />
+          </div>
+        }
       />
 
       {step !== null && <RunProgress step={step} />}

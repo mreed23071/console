@@ -30,6 +30,7 @@
   },
   "column": {
     "run": "Run",
+    "platform": "Platform",
     "status": "Status",
     "started": "Started",
     "duration": "Duration",

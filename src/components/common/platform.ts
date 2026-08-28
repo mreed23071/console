@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { Platform } from "@/lib/api/types";
 
 /** Every platform the console knows about, in display order. */
-export const PLATFORMS: Platform[] = ["slack", "github", "teams", "email", "linear"];
+export const PLATFORMS: Platform[] = ["slack", "github", "teams", "email", "linear", "other"];
 
 /**
  * Platform names are proper nouns and stay untranslated in English, but they
@@ -17,5 +17,6 @@ export function usePlatformLabels(): Record<Platform, string> {
     teams: t("platform.teams"),
     email: t("platform.email"),
     linear: t("platform.linear"),
+    other: t("platform.other"),
   };
 }

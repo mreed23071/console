@@ -46,8 +46,8 @@ export const queryKeys = {
 
   ingestion: {
     all: ["ingestion"] as const,
-    runs: () => [...queryKeys.ingestion.all, "runs"] as const,
-    config: () => [...queryKeys.ingestion.all, "config"] as const,
+    runs: (platform?: string) => [...queryKeys.ingestion.all, "runs", platform] as const,
+    config: (platform: string) => [...queryKeys.ingestion.all, "config", platform] as const,
   },
 
   connectors: {

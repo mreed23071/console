@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { PlatformBadge } from "@/components/common/platform-icon";
 import { StatusBadge } from "@/components/common/status-badge";
 import type { AnyColumnDef } from "@/components/common/table-types";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,18 @@ export function useRunColumns(): AnyColumnDef<IngestionRun>[] {
         accessorKey: "run_id",
         header: t("column.run"),
         cell: ({ getValue }) => <span className="tnum font-medium">{getValue<string>()}</span>,
+      },
+      {
+        accessorKey: "platform",
+        header: t("column.platform"),
+        cell: ({ getValue }) => {
+          const platform = getValue<IngestionRun["platform"]>();
+          return platform ? (
+            <PlatformBadge platform={platform} />
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          );
+        },
       },
       {
         accessorKey: "status",
@@ -81,6 +94,7 @@ export function useRunColumnLabels(): Record<string, string> {
   const { t } = useTranslation("ingestion");
   return {
     run_id: t("column.run"),
+    platform: t("column.platform"),
     status: t("column.status"),
     started_at: t("column.started"),
     duration_ms: t("column.duration"),

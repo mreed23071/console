@@ -52,7 +52,7 @@ describe("ingestion runs", () => {
 
   it("prepends a new run when triggered", async () => {
     const before = (await getIngestionRuns()).length;
-    const run = await triggerIngestionRun();
+    const run = await triggerIngestionRun("slack");
 
     const after = await getIngestionRuns();
     expect(after).toHaveLength(before + 1);
@@ -60,7 +60,7 @@ describe("ingestion runs", () => {
   });
 
   it("marks a triggered run successful with consistent counters", async () => {
-    const run = await triggerIngestionRun();
+    const run = await triggerIngestionRun("slack");
     expect(run.status).toBe("success");
     expect(run.evaluated).toBe(run.fetched - run.already_ingested);
     expect(run.discarded).toBe(run.evaluated - run.retained);
@@ -68,7 +68,7 @@ describe("ingestion runs", () => {
   });
 
   it("persists nothing on a dry run", async () => {
-    const run = await triggerIngestionRun({ dry_run: true });
+    const run = await triggerIngestionRun("slack", { dry_run: true });
     expect(run.dry_run).toBe(true);
     expect(run.persisted).toBe(0);
     // Embedding still happens; only the write is skipped.
@@ -76,8 +76,20 @@ describe("ingestion runs", () => {
   });
 
   it("returns the pipeline config", async () => {
-    const config = await getIngestionConfig();
+    const config = await getIngestionConfig("slack");
     expect(config.embedding_dim).toBeGreaterThan(0);
     expect(config.filter_system_prompt.length).toBeGreaterThan(0);
+  });
+
+  it("tags a triggered run with the platform it ran", async () => {
+    const run = await triggerIngestionRun("github");
+    expect(run.platform).toBe("github");
+  });
+
+  it("filters run history by platform", async () => {
+    await triggerIngestionRun("teams");
+    const runs = await getIngestionRuns("teams");
+    expect(runs.length).toBeGreaterThan(0);
+    expect(runs.every((r) => r.platform === "teams")).toBe(true);
   });
 });

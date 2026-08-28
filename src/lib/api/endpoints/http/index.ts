@@ -25,6 +25,7 @@ import type {
   Person,
   PersonNote,
   PersonWithMeta,
+  Platform,
   ReadinessResponse,
   Summary,
   SummaryRange,
@@ -221,14 +222,16 @@ export const removeOrgMember = async (nodeId: string, userId: string): Promise<O
 
 export const getConnectors = (): Promise<Connector[]> => get<Connector[]>("/connectors");
 
-export const getIngestionRuns = (): Promise<IngestionRun[]> =>
-  get<IngestionRun[]>("/ingestion/runs");
+export const getIngestionRuns = (platform?: Platform): Promise<IngestionRun[]> =>
+  get<IngestionRun[]>("/ingestion/runs", { platform });
 
-export const triggerIngestionRun = (options: TriggerRunOptions = {}): Promise<IngestionRun> =>
-  post<IngestionRun>("/ingestion/runs", options);
+export const triggerIngestionRun = (
+  platform: Platform,
+  options: TriggerRunOptions = {},
+): Promise<IngestionRun> => post<IngestionRun>(`/ingestion/runs/${platform}`, options);
 
-export const getIngestionConfig = (): Promise<IngestionConfig> =>
-  get<IngestionConfig>("/ingestion/config");
+export const getIngestionConfig = (platform: Platform): Promise<IngestionConfig> =>
+  get<IngestionConfig>(`/ingestion/config/${platform}`);
 
 export const getHealth = (): Promise<HealthResponse> => getRoot<HealthResponse>("/health");
 

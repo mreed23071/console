@@ -1,6 +1,10 @@
-import type { IngestionConfig, IngestionRun, RunDecision } from "../types";
+import type { IngestionConfig, IngestionRun, Platform, RunDecision } from "../types";
 import { messages } from "./messages.mock";
 import { DAY, HOUR, int, iso, NOW, pick, rnd } from "./random";
+
+//: Mirrors the backend's connector registry - only these three have a mock
+//: source wired up, so runs only ever come from one of them.
+const CONNECTED_PLATFORMS: Platform[] = ["slack", "github", "teams"];
 
 function makeDecisions(n: number): RunDecision[] {
   const out: RunDecision[] = [];
@@ -43,6 +47,7 @@ export function seedIngestionRuns(): IngestionRun[] {
       finished_at: iso(started + duration),
       duration_ms: duration,
       dry_run: i === 7,
+      platform: CONNECTED_PLATFORMS[i % CONNECTED_PLATFORMS.length]!,
       fetched,
       already_ingested: already,
       evaluated,
@@ -64,6 +69,7 @@ export function seedIngestionRuns(): IngestionRun[] {
 export const ingestionRuns: IngestionRun[] = seedIngestionRuns();
 
 export const ingestionConfig: IngestionConfig = {
+  platform: "slack",
   filter_system_prompt:
     "You classify workplace messages into business, personal, automated, or unclear. Retain business messages verbatim. Discard personal content. Flag automation output. When the message lacks enough context to decide, return unclear with a short reason.",
   llm_provider: "openai:gpt-4o-mini",

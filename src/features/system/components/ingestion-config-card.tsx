@@ -5,10 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHasScope } from "@/features/auth";
 import { useIngestionConfig } from "@/features/ingestion";
+import type { Platform } from "@/lib/api/types";
 
-export function IngestionConfigCard() {
+/**
+ * Settings are effectively global today (prompt, model, embedder) - only the
+ * connector varies by platform - so any registered platform is a fair
+ * representative to show here rather than adding a picker for one field.
+ */
+export function IngestionConfigCard({ platform = "slack" }: { platform?: Platform }) {
   const { t } = useTranslation("system");
-  const config = useIngestionConfig();
+  const config = useIngestionConfig(platform);
   const canView = useHasScope("config:read");
 
   const rows = config.data

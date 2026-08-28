@@ -1,5 +1,5 @@
 import { ingestionConfig, ingestionRuns } from "../mock";
-import type { IngestionConfig, IngestionRun } from "../types";
+import type { IngestionConfig, IngestionRun, Platform } from "../types";
 import { delay } from "./_shared";
 
 export interface TriggerRunOptions {
@@ -7,13 +7,16 @@ export interface TriggerRunOptions {
 }
 
 /** GET /api/v1/ingestion/runs */
-export async function getIngestionRuns(): Promise<IngestionRun[]> {
+export async function getIngestionRuns(platform?: Platform): Promise<IngestionRun[]> {
   await delay();
-  return [...ingestionRuns];
+  return platform ? ingestionRuns.filter((r) => r.platform === platform) : [...ingestionRuns];
 }
 
-/** POST /api/v1/ingestion/runs */
-export async function triggerIngestionRun(options: TriggerRunOptions = {}): Promise<IngestionRun> {
+/** POST /api/v1/ingestion/runs/{platform} */
+export async function triggerIngestionRun(
+  platform: Platform,
+  options: TriggerRunOptions = {},
+): Promise<IngestionRun> {
   await delay(600);
   const previous = ingestionRuns[0]!;
   const started = Date.now() - 42_000;
@@ -28,6 +31,7 @@ export async function triggerIngestionRun(options: TriggerRunOptions = {}): Prom
     finished_at: new Date().toISOString(),
     duration_ms: 42_000,
     dry_run: options.dry_run ?? false,
+    platform,
     fetched,
     already_ingested: already,
     evaluated,
@@ -43,8 +47,8 @@ export async function triggerIngestionRun(options: TriggerRunOptions = {}): Prom
   return run;
 }
 
-/** GET /api/v1/ingestion/config */
-export async function getIngestionConfig(): Promise<IngestionConfig> {
+/** GET /api/v1/ingestion/config/{platform} */
+export async function getIngestionConfig(platform: Platform): Promise<IngestionConfig> {
   await delay(250);
-  return ingestionConfig;
+  return { ...ingestionConfig, platform };
 }

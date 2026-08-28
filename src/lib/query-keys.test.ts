@@ -31,7 +31,7 @@ describe("key hierarchy", () => {
     expect(startsWith(queryKeys.org.nodes(), queryKeys.org.all)).toBe(true);
     expect(startsWith(queryKeys.messages.list(), queryKeys.messages.all)).toBe(true);
     expect(startsWith(queryKeys.ingestion.runs(), queryKeys.ingestion.all)).toBe(true);
-    expect(startsWith(queryKeys.ingestion.config(), queryKeys.ingestion.all)).toBe(true);
+    expect(startsWith(queryKeys.ingestion.config("slack"), queryKeys.ingestion.all)).toBe(true);
     expect(startsWith(queryKeys.connectors.list(), queryKeys.connectors.all)).toBe(true);
     expect(startsWith(queryKeys.system.health(), queryKeys.system.all)).toBe(true);
     expect(startsWith(queryKeys.accounts.unlinked(), queryKeys.accounts.all)).toBe(true);

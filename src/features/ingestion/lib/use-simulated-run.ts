@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { useTriggerIngestionRun } from "@/features/ingestion/api/queries";
 import { RUN_STEP_COUNT } from "@/features/ingestion/lib/run-level";
+import type { Platform } from "@/lib/api/types";
 
 const STEP_INTERVAL_MS = 900;
 const RESET_DELAY_MS = 1200;
@@ -16,7 +17,11 @@ const RESET_DELAY_MS = 1200;
  * presentation only — they give the operator a sense of the pipeline's stages
  * rather than a blank spinner.
  */
-export function useSimulatedRun(step: number | null, setStep: (s: number | null) => void): void {
+export function useSimulatedRun(
+  step: number | null,
+  setStep: (s: number | null) => void,
+  platform: Platform,
+): void {
   const { t } = useTranslation("ingestion");
   const trigger = useTriggerIngestionRun();
 
@@ -32,7 +37,7 @@ export function useSimulatedRun(step: number | null, setStep: (s: number | null)
     if (step !== RUN_STEP_COUNT - 1) return undefined;
 
     trigger.mutate(
-      {},
+      { platform },
       {
         onSuccess: (run) =>
           toast.success(t("trigger.success", { runId: run.run_id, count: run.persisted })),
@@ -44,5 +49,5 @@ export function useSimulatedRun(step: number | null, setStep: (s: number | null)
     return () => clearTimeout(timer);
     // `trigger` is a new object each render; depending on it would re-fire the run.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, setStep]);
+  }, [step, setStep, platform]);
 }
