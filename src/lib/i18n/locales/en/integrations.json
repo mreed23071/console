@@ -1,0 +1,36 @@
+{
+  "meta": {
+    "title": "Integrations · Threadline Console",
+    "description": "Connector health for Slack, GitHub, Teams, Email and Linear, with last sync and volume.",
+    "ogDescription": "Platform connector status and ingestion controls."
+  },
+  "title": "Integrations",
+  "description": "Connector status and ingestion controls per platform.",
+  "status": {
+    "connected": "Connected",
+    "degraded": "Degraded",
+    "needs_attention": "Needs attention",
+    "disconnected": "Disconnected"
+  },
+  "card": {
+    "linkedAccounts_one": "{{count}} linked account",
+    "linkedAccounts_other": "{{count}} linked accounts",
+    "lastSync": "Last sync",
+    "messages": "Messages",
+    "configure": "Configure",
+    "runNow": "Run ingestion now",
+    "runAllowed": "Trigger a pipeline run for this connector",
+    "runDenied": "Your role doesn't include the runs:write scope",
+    "runSuccess": "Run {{runId}} completed for {{platform}}",
+    "runError": "Ingestion run failed to start"
+  },
+  "configure": {
+    "title": "Configure {{platform}}",
+    "description": "Mock configuration — nothing is persisted in this proof of concept.",
+    "workspaceLabel": "Workspace / org",
+    "pollLabel": "Poll interval (minutes)",
+    "backfillTitle": "Backfill history",
+    "backfillDescription": "Fetch the last 90 days on next run",
+    "saved": "Connector settings saved (mock)"
+  }
+}

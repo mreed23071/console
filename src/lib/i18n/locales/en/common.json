@@ -1,0 +1,89 @@
+{
+  "action": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "delete": "Delete",
+    "remove": "Remove",
+    "edit": "Edit",
+    "create": "Create",
+    "confirm": "Confirm",
+    "previous": "Previous",
+    "next": "Next",
+    "goHome": "Go home",
+    "tryAgain": "Try again",
+    "regenerate": "Regenerate",
+    "viewAll": "View all",
+    "copy": "Copy"
+  },
+  "error": {
+    "title": "Couldn't load this data",
+    "description": "The request to the Threadline API failed.",
+    "pageTitle": "This page didn't load",
+    "pageDescription": "Something went wrong on our end. You can try refreshing or head back home.",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The page you're looking for doesn't exist or has been moved."
+  },
+  "empty": {
+    "title": "Nothing here yet",
+    "description": "Once the ingestion pipeline runs, results will appear in this table.",
+    "noResults": "No results found."
+  },
+  "table": {
+    "columns": "Columns",
+    "searchPlaceholder": "Search…",
+    "searchLabel": "Search table",
+    "rowCount_one": "{{count}} row",
+    "rowCount_other": "{{count}} rows",
+    "pageOf": "page {{page}} of {{total}}"
+  },
+  "label": {
+    "loading": "Loading…",
+    "never": "Never",
+    "none": "None",
+    "unknown": "Unknown",
+    "all": "All",
+    "platform": "Platform",
+    "category": "Category",
+    "status": "Status",
+    "email": "Email",
+    "name": "Name",
+    "search": "Search"
+  },
+  "category": {
+    "business": "Business",
+    "personal": "Personal",
+    "automated": "Automated",
+    "unclear": "Unclear"
+  },
+  "platform": {
+    "slack": "Slack",
+    "github": "GitHub",
+    "teams": "Teams",
+    "email": "Email",
+    "linear": "Linear"
+  },
+  "time": {
+    "justNow": "just now",
+    "minutesAgo_one": "{{count}} minute ago",
+    "minutesAgo_other": "{{count}} minutes ago",
+    "hoursAgo_one": "{{count}} hour ago",
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo_one": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago"
+  },
+  "a11y": {
+    "more": "More",
+    "morePages": "More pages",
+    "previousSlide": "Previous slide",
+    "nextSlide": "Next slide",
+    "previousPage": "Go to previous page",
+    "nextPage": "Go to next page",
+    "sidebar": "Sidebar",
+    "sidebarDescription": "Displays the mobile sidebar.",
+    "toggleSidebar": "Toggle Sidebar"
+  }
+}

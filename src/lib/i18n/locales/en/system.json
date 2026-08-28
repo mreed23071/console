@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "title": "System status · Threadline Console",
+    "description": "Health and readiness for the Threadline API, database and embedding worker, plus pipeline config.",
+    "ogDescription": "Live health, readiness and ingestion configuration."
+  },
+  "title": "Status",
+  "description": "Health, readiness and pipeline configuration.",
+  "pill": {
+    "api": "API",
+    "apiDetail": "healthy · checked {{time}}",
+    "database": "Database",
+    "databaseDetail": "pgvector · checked {{time}}",
+    "worker": "Embedding worker",
+    "workerDetail": "degraded · checked {{time}}",
+    "checking": "checking…"
+  },
+  "environment": {
+    "title": "Environment",
+    "description": "Reported by /health and /ready.",
+    "status": "Status",
+    "version": "Version",
+    "environment": "Environment",
+    "readiness": "Readiness"
+  },
+  "config": {
+    "title": "Ingestion configuration",
+    "description": "Read-only. Requires the config:read scope.",
+    "denied": "Your role doesn't include the config:read scope, so the pipeline configuration is hidden.",
+    "llmProvider": "LLM provider",
+    "embeddingModel": "Embedding model",
+    "embeddingDim": "Embedding dim",
+    "executor": "Executor",
+    "workers": "Workers",
+    "filterPrompt": "Filter system prompt"
+  }
+}

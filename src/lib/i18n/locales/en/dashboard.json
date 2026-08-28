@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "title": "Dashboard · Threadline Console",
+    "description": "Ingestion overview: people tracked, retained messages, connector health and recent pipeline runs.",
+    "ogDescription": "Identity resolution and ingestion pipeline overview."
+  },
+  "title": "Dashboard",
+  "description": "Ingestion pipeline and identity resolution at a glance.",
+  "stat": {
+    "people": "Employee Database",
+    "peopleHint": "Resolved internal records",
+    "messagesToday": "Messages retained today",
+    "messagesHint": "{{count}} in the last 30 days",
+    "connectors": "Active connectors",
+    "connectorsHint": "Platforms reporting healthy",
+    "lastRun": "Last run",
+    "lastRunDetail": "{{runId}} · {{count}} persisted"
+  },
+  "health": {
+    "sectionLabel": "System health",
+    "api": "API",
+    "apiDetail": "v{{version}} · {{environment}}",
+    "database": "Database",
+    "databaseOk": "pgvector reachable",
+    "databaseFail": "connection failing",
+    "worker": "Embedding worker",
+    "workerOk": "queue draining",
+    "workerFail": "queue backed up, retrying",
+    "checking": "checking…"
+  },
+  "chart": {
+    "categoryTitle": "Filter category breakdown",
+    "categoryDescription": "How the LLM filter classified ingested messages.",
+    "volumeTitle": "Messages over time",
+    "volumeDescription": "Retained message volume, last 14 days.",
+    "messages": "Messages",
+    "showTables": "View charts as tables",
+    "hideTables": "Hide chart data tables",
+    "categoryTableTitle": "Filter categories (table)",
+    "volumeTableTitle": "Messages over time (table)",
+    "columnCategory": "Category",
+    "columnMessages": "Messages",
+    "columnDate": "Date"
+  },
+  "recentRuns": {
+    "title": "Recent ingestion runs",
+    "description": "Last five pipeline executions.",
+    "allRuns": "All runs",
+    "counts": "{{retained}} retained / {{fetched}} fetched"
+  }
+}

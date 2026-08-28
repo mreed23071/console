@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "title": "Settings · Threadline Console",
+    "description": "Profile, role/persona switching, theme preference and build information for the console.",
+    "ogDescription": "Console preferences and mocked scope model."
+  },
+  "title": "Settings",
+  "description": "Console preferences for this proof of concept.",
+  "profile": {
+    "title": "Profile",
+    "description": "Mock profile — nothing is persisted to a backend.",
+    "displayName": "Display name",
+    "email": "Email",
+    "emailHint": "Email is tied to your session and cannot be changed.",
+    "save": "Save profile",
+    "saved": "Profile saved (mock)"
+  },
+  "role": {
+    "title": "Role",
+    "description": "Switch persona to see how scopes gate the console.",
+    "switched": "Switched to {{persona}}",
+    "noScopes": "no scopes",
+    "admin": "Full access including triggering runs and reading config",
+    "analyst": "Read people, messages and summaries",
+    "viewer": "Dashboard, integrations and status only"
+  },
+  "appearance": {
+    "title": "Appearance",
+    "description": "Light is the default; dark mode uses the same tokens.",
+    "darkMode": "Dark mode",
+    "current": "Currently {{theme}}",
+    "toggleLabel": "Toggle dark mode"
+  },
+  "language": {
+    "title": "Language",
+    "description": "Interface language for the console.",
+    "label": "Display language",
+    "changed": "Language changed to {{language}}"
+  },
+  "build": {
+    "title": "Build info",
+    "app": "App",
+    "appValue": "Threadline Console",
+    "build": "Build",
+    "buildValue": "poc-0.4.2",
+    "dataSource": "Data source",
+    "dataSourceValue": "in-memory mock",
+    "apiBase": "API base",
+    "apiBaseValue": "/v1 (mocked)"
+  }
+}

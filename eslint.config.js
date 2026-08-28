@@ -1,0 +1,194 @@
+import js from "@eslint/js";
+import eslintPluginPrettier from "eslint-plugin-prettier/recommended";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+
+/**
+ * Architectural boundaries.
+ *
+ * The point of the feature-first layout is that dependencies flow one way:
+ *
+ *   routes  ->  features  ->  components/{common,layout}  ->  components/ui
+ *                  |
+ *                  +-------->  lib/api (endpoints only, never mock/)
+ *
+ * These rules make a violation a lint error rather than something a reviewer
+ * has to catch by eye.
+ */
+const MOCK_DATA_RESTRICTION = {
+  group: ["@/lib/api/mock", "@/lib/api/mock/*", "**/lib/api/mock/*"],
+  message:
+    "Mock tables are an implementation detail of lib/api/endpoints. Call an endpoint (or a feature hook) instead — this is what lets us swap in the real FastAPI backend.",
+};
+
+const ENDPOINTS_RESTRICTION = {
+  group: ["@/lib/api/endpoints", "@/lib/api/endpoints/*"],
+  message:
+    "Don't call the API layer directly from a route or component. Use the feature's React Query hooks in src/features/<domain>/api/ so caching and invalidation stay consistent.",
+};
+
+/**
+ * Every feature exposes a public surface through its `index.ts`. Cross-feature
+ * imports must go through that barrel; reaching into another feature's
+ * `components/`, `api/` or `lib/` couples the two together and makes the
+ * feature impossible to move or delete on its own.
+ *
+ * Within a feature, deep imports are fine and encouraged.
+ */
+const FEATURES = ["auth", "dashboard", "ingestion", "integrations", "messages", "people", "system"];
+
+const crossFeatureOverrides = FEATURES.map((feature) => ({
+  files: [`src/features/${feature}/**/*.{ts,tsx}`],
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          MOCK_DATA_RESTRICTION,
+          {
+            group: FEATURES.filter((f) => f !== feature).map((f) => `@/features/${f}/*`),
+            message:
+              "Import another feature through its barrel (`@/features/<name>`), not its internals.",
+          },
+        ],
+      },
+    ],
+  },
+}));
+
+export default tseslint.config(
+  { ignores: ["dist", ".output", ".vinxi", ".nitro", "src/routeTree.gen.ts"] },
+
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+      "simple-import-sort": simpleImportSort,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+
+      "simple-import-sort/imports": "warn",
+      "simple-import-sort/exports": "warn",
+
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
+      "@typescript-eslint/consistent-type-imports": [
+        "warn",
+        { prefer: "type-imports", fixStyle: "inline-type-imports" },
+      ],
+
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "server-only",
+              message:
+                "TanStack Start does not use the Next.js `server-only` package. Rename the module to `*.server.ts` or mark it with `@tanstack/react-start/server-only`.",
+            },
+          ],
+          patterns: [MOCK_DATA_RESTRICTION],
+        },
+      ],
+
+      // Catches text that was typed straight into JSX instead of going through
+      // a translation token. Warn, not error: a stray "·" or "—" is fine.
+      "no-restricted-syntax": [
+        "warn",
+        {
+          selector: "JSXText[value=/[A-Za-z]{3,}/]",
+          message:
+            "Hardcoded text in JSX. Add a token to src/lib/i18n/locales/en/<namespace>.json and render it with t().",
+        },
+        {
+          selector:
+            "JSXAttribute[name.name=/^(placeholder|title|aria-label|alt)$/] > Literal[value=/[A-Za-z]{3,}/]",
+          message: "Hardcoded text in a user-visible attribute. Use t() so it can be translated.",
+        },
+      ],
+    },
+  },
+
+  // Routes and shared components must go through feature hooks, never the API
+  // layer directly.
+  {
+    files: ["src/routes/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            MOCK_DATA_RESTRICTION,
+            ENDPOINTS_RESTRICTION,
+            {
+              group: ["@/features/*/*"],
+              message:
+                "Import a feature through its barrel (`@/features/<name>`) so routes stay decoupled from its internal layout.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  ...crossFeatureOverrides,
+
+  // shadcn primitives are generic building blocks: they must not reach up into
+  // application features.
+  {
+    files: ["src/components/ui/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@/features/*", "@/features/**"],
+              message:
+                "src/components/ui holds generic primitives. Move feature-aware code into src/features/<domain>/components instead.",
+            },
+            MOCK_DATA_RESTRICTION,
+          ],
+        },
+      ],
+      // Vendored from shadcn; keep the diff against upstream small.
+      "no-restricted-syntax": "off",
+      "react-refresh/only-export-components": "off",
+    },
+  },
+
+  // The API layer is the one place allowed to touch the mock tables.
+  {
+    files: ["src/lib/api/**/*.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
+
+  // Generated and config files.
+  {
+    files: ["*.config.{js,ts}", "src/routeTree.gen.ts"],
+    rules: { "no-restricted-syntax": "off", "simple-import-sort/imports": "off" },
+  },
+
+  // Tests and their shared setup may reach past the boundaries the app obeys:
+  // asserting that `forgetUser` really emptied the messages table means reading
+  // that table directly. Nothing here ships, so the coupling costs nothing.
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx", "src/test/**/*.ts"],
+    rules: { "no-restricted-imports": "off" },
+  },
+
+  eslintPluginPrettier,
+);

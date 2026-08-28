@@ -1,0 +1,33 @@
+{
+  "brand": {
+    "name": "Threadline",
+    "subtitle": "Console",
+    "console": "Threadline Console"
+  },
+  "section": {
+    "workspace": "Workspace",
+    "integrations": "Integrations"
+  },
+  "item": {
+    "dashboard": "Dashboard",
+    "people": "Employee Database",
+    "org": "Organization",
+    "messages": "Messages",
+    "integrations": "Integrations",
+    "runs": "Ingestion runs",
+    "status": "Status",
+    "settings": "Settings"
+  },
+  "search": {
+    "trigger": "Search console…",
+    "placeholder": "Jump to a page…",
+    "pages": "Pages"
+  },
+  "footer": {
+    "mockData": "Mock data · no backend connected",
+    "environment": "env: {{name}}"
+  },
+  "theme": {
+    "toggle": "Toggle theme"
+  }
+}

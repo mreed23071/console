@@ -1,0 +1,101 @@
+{
+  "meta": {
+    "title": "Organization · Threadline Console",
+    "description": "Structural tree of departments and reporting lines, with employees assigned to each part of the directory.",
+    "ogDescription": "Map departments and assign resolved employee records to the org directory."
+  },
+  "title": "Organization",
+  "description": "Departments and reporting lines, with resolved employee records assigned to each.",
+  "view": {
+    "chart": "Chart",
+    "tree": "Tree",
+    "label": "Hierarchy view",
+    "chartTitle": "Visual hierarchy",
+    "treeTitle": "Directory tree",
+    "hint": "Select a department to manage the people assigned to it."
+  },
+  "canvas": {
+    "panHint": "Drag to pan · scroll to zoom",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "resetView": "Reset view",
+    "zoomLevel": "{{percent}}%"
+  },
+  "empty": {
+    "title": "No departments yet",
+    "description": "Add a department to start building the organization directory.",
+    "noSelection": "No department selected"
+  },
+  "node": {
+    "memberCount_one": "{{count}} assigned",
+    "memberCount_other": "{{count}} assigned",
+    "noSubtitle": "—"
+  },
+  "panel": {
+    "title": "Department",
+    "assignedPeople": "Assigned people",
+    "noneAssigned": "Nobody is assigned to this department yet.",
+    "unknownPerson": "Unknown employee",
+    "noJobTitle": "—",
+    "remove": "Remove {{name}} from this department",
+    "removeSuccess": "{{name}} was unassigned",
+    "removeError": "Could not unassign that person"
+  },
+  "action": {
+    "addNode": "Add department",
+    "addChild": "Add sub-department",
+    "assign": "Assign person",
+    "edit": "Edit department",
+    "delete": "Delete department"
+  },
+  "add": {
+    "title": "Add department",
+    "description": "Create a new branch in the organization directory.",
+    "submit": "Add department",
+    "pending": "Adding…",
+    "success": "{{name}} was added",
+    "error": "Could not add that department"
+  },
+  "edit": {
+    "title": "Edit department",
+    "description": "Rename a department, or move it under a different parent to change the reporting line.",
+    "success": "{{name}} was updated",
+    "error": "Could not update that department"
+  },
+  "field": {
+    "name": "Name",
+    "namePlaceholder": "CTO Division",
+    "subtitle": "Description",
+    "subtitlePlaceholder": "Engineering & Tech",
+    "parent": "Reports to",
+    "noParent": "No parent (top level)"
+  },
+  "assign": {
+    "title": "Assign a person to {{name}}",
+    "description": "A person belongs to one department at a time, so assigning moves them here.",
+    "placeholder": "Search people…",
+    "searchPlaceholder": "Search by name, email or title…",
+    "notFound": "No people found.",
+    "submit": "Assign person",
+    "pending": "Assigning…",
+    "success": "{{person}} was assigned to {{node}}",
+    "error": "Could not assign that person",
+    "currentlyUnassigned": "Unassigned",
+    "alreadyHere": "Already here",
+    "moveSuccess": "{{person}} moved from {{from}} to {{to}}"
+  },
+  "reassign": {
+    "title": "Move {{name}} to a different department?",
+    "description": "{{person}} is currently in {{from}}. Assigning them to {{to}} removes them from {{from}} — a person belongs to one department at a time.",
+    "confirm": "Move person"
+  },
+  "delete": {
+    "title": "Delete {{name}}?",
+    "description": "Any sub-departments move up to this department's parent. People are only unassigned — their records are not deleted.",
+    "confirm": "Delete department",
+    "success": "{{name}} was deleted",
+    "successPromoted_one": "{{name}} was deleted · {{count}} sub-department moved up",
+    "successPromoted_other": "{{name}} was deleted · {{count}} sub-departments moved up",
+    "error": "Could not delete that department"
+  }
+}

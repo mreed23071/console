@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "title": "Ingestion runs · Threadline Console",
+    "description": "Pipeline run history with fetch, filter, embed and persist counters and per-message decisions.",
+    "ogDescription": "Every pipeline execution and its filtering decisions."
+  },
+  "title": "Ingestion runs",
+  "description": "Every pipeline execution, its counters and filtering decisions.",
+  "searchPlaceholder": "Search runs…",
+  "emptyTitle": "No runs recorded",
+  "emptyDescription": "Trigger an ingestion run to populate this history.",
+  "trigger": {
+    "action": "Trigger new run",
+    "allowed": "Start a pipeline run",
+    "denied": "Your role doesn't include the runs:write scope",
+    "success": "Run {{runId}} finished — {{count}} persisted",
+    "error": "Run failed"
+  },
+  "progress": {
+    "inProgress": "Run in progress — {{step}}",
+    "stepOf": "step {{current}} of {{total}}"
+  },
+  "step": {
+    "fetching": "Fetching",
+    "deduplicating": "Deduplicating",
+    "filtering": "Filtering",
+    "embedding": "Embedding",
+    "persisting": "Persisting",
+    "done": "Done"
+  },
+  "column": {
+    "run": "Run",
+    "status": "Status",
+    "started": "Started",
+    "duration": "Duration",
+    "fetched": "Fetched",
+    "retained": "Retained",
+    "discarded": "Discarded",
+    "embedded": "Embedded",
+    "persisted": "Persisted",
+    "filterErrors": "Filter errors",
+    "dryRun": "Dry run"
+  },
+  "detail": {
+    "dryRun": "dry run",
+    "errorCount": "{{count}} errors",
+    "alreadyIngested": "Already ingested",
+    "evaluated": "Evaluated",
+    "usersProvisioned": "Users provisioned",
+    "decisionsTitle": "Per-message decisions",
+    "kept": "kept",
+    "discarded": "discarded"
+  },
+  "status": {
+    "success": "success",
+    "partial": "partial",
+    "failed": "failed"
+  }
+}

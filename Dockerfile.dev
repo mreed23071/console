@@ -1,0 +1,28 @@
+# Development image: Vite dev server with hot module reload.
+#
+# The source tree is bind-mounted over /app by docker-compose, so this image
+# exists mainly to provide a pinned Bun runtime and a populated node_modules
+# (kept in a named volume so the bind mount can't hide it).
+#
+# For a production image, run `vite build` and serve the static dist/ output
+# (e.g. nginx) instead — this one runs the dev server and is not hardened for
+# deployment. The app is plain client-side rendered; no Node runtime is
+# needed to serve it in production.
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+# Dependencies first, so this layer is cached until the manifest changes.
+COPY package.json bun.lock ./
+
+# --frozen-lockfile installs exactly what bun.lock pins and fails rather than
+# resolving, so the image matches local development and CI byte for byte.
+RUN bun install --frozen-lockfile
+
+COPY . .
+
+EXPOSE 8080
+
+# --host binds to all interfaces; without it Vite listens on 127.0.0.1 only and
+# the published port answers nothing.
+CMD ["bun", "run", "dev", "--host", "0.0.0.0", "--port", "8080"]

@@ -1,0 +1,154 @@
+{
+  "meta": {
+    "listTitle": "People · Threadline Console",
+    "listDescription": "Every resolved person record with their connected platform identities and message volume.",
+    "listOgDescription": "Resolved identities across Slack, GitHub, Teams and more.",
+    "detailTitle": "Person profile · Threadline Console",
+    "detailDescription": "Connected accounts, generated activity summary and recent verbatim messages for one person.",
+    "detailOgDescription": "One resolved record across every connected platform."
+  },
+  "list": {
+    "title": "People",
+    "description": "Resolved identity records across every connected platform.",
+    "addPerson": "Add person",
+    "searchPlaceholder": "Search people by name, email or title…",
+    "emptyTitle": "No people ingested yet",
+    "emptyDescription": "Run the ingestion pipeline to resolve platform identities into person records."
+  },
+  "column": {
+    "name": "Name",
+    "email": "Email",
+    "jobTitle": "Job title",
+    "department": "Department",
+    "noDepartment": "Unassigned",
+    "platforms": "Platforms",
+    "messages": "Messages",
+    "lastSummary": "Last summary"
+  },
+  "unresolved": {
+    "title": "Unresolved accounts",
+    "description": "Platform identities seen during ingestion that are not attributed to anyone yet. Linking one re-attributes all of its messages.",
+    "messageCount": "{{platform}} · {{count}} messages",
+    "link": "Link"
+  },
+  "detail": {
+    "back": "Back to people",
+    "notFound": "Person not found",
+    "active": "Active",
+    "inactive": "Inactive",
+    "editProfile": "Edit profile",
+    "noAddress": "No address on file",
+    "present": "present",
+    "identity": "{{jobTitle}} · {{email}} · {{timezone}}"
+  },
+  "forget": {
+    "action": "Forget person",
+    "confirmTitle": "Erase {{name}}?",
+    "confirmDescription": "This permanently removes the person record, every linked platform account, all retained messages and any admin notes. This cannot be undone.",
+    "confirmAction": "Erase permanently",
+    "success": "Record erased — {{messages}} messages and {{accounts}} accounts removed",
+    "error": "Could not erase this record"
+  },
+  "accounts": {
+    "title": "Connected accounts",
+    "description": "Platform identities resolved to this record.",
+    "add": "Add",
+    "emptyTitle": "No linked accounts",
+    "emptyDescription": "No platform identity resolved yet.",
+    "primary": "primary",
+    "unlinkTooltip": "Unlink — messages return to the unresolved pool",
+    "unlinkSuccess": "Account unlinked",
+    "unlinkError": "Could not unlink account",
+    "removeTooltip": "Remove account and delete its messages",
+    "removeSuccess": "Account removed — {{count}} messages deleted",
+    "removeError": "Could not remove account"
+  },
+  "summary": {
+    "title": "Generated summary",
+    "fallbackDescription": "Derived from retained messages",
+    "generatedAt": "Generated {{date}} · {{range}}",
+    "basedOn": "Based on {{count}} retained messages · {{range}}",
+    "regenerateSuccess": "Summary regenerated",
+    "regenerateError": "Could not regenerate summary",
+    "range": {
+      "all": "All messages",
+      "last7": "Last 7 days",
+      "last30": "Last 30 days",
+      "last90": "Last 90 days",
+      "custom": "Custom range…",
+      "start": "Summary range start",
+      "end": "Summary range end",
+      "to": "to"
+    }
+  },
+  "activity": {
+    "title": "Recent activity",
+    "description": "Messages and GitHub commits, stored verbatim, most recent first.",
+    "emptyTitle": "No messages retained",
+    "emptyDescription": "Nothing from this person has passed the ingestion filter yet.",
+    "commitMeta_one": "{{repository}} · {{count}} file changed · +{{additions}}/−{{deletions}}",
+    "commitMeta_other": "{{repository}} · {{count}} files changed · +{{additions}}/−{{deletions}}"
+  },
+  "notes": {
+    "title": "Admin notes",
+    "description": "Private to admins — never shown to analysts or viewers.",
+    "placeholder": "Add a private note about this person…",
+    "add": "Add note",
+    "addSuccess": "Note added",
+    "addError": "Could not add note",
+    "emptyTitle": "No notes yet",
+    "emptyDescription": "Admin notes about this person will appear here."
+  },
+  "dialog": {
+    "add": {
+      "title": "Add person",
+      "description": "Creates an empty person record. Link platform accounts afterwards to attribute messages.",
+      "submit": "Add person",
+      "success": "{{name}} added",
+      "error": "Could not add person"
+    },
+    "edit": {
+      "title": "Edit profile",
+      "description": "Update the person record. Email is the resolution key.",
+      "success": "Profile updated",
+      "error": "Could not update profile"
+    },
+    "link": {
+      "title": "Link account to a person",
+      "description": "Every message from {{account}} will be re-attributed to the selected person.",
+      "selectPlaceholder": "Select a person…",
+      "searchPlaceholder": "Search people by name, email or title…",
+      "notFound": "No person found.",
+      "submit": "Link account",
+      "success": "Account linked — messages re-attributed",
+      "error": "Could not link account",
+      "fallbackLabel": "this account"
+    },
+    "addAccount": {
+      "title": "Add platform account",
+      "description": "Attach another platform identity to this person.",
+      "handleLabel": "Handle or username",
+      "handlePlaceholder": "octo-jane",
+      "emailLabel": "Account email",
+      "submit": "Add account",
+      "success": "Account added",
+      "error": "Could not add account"
+    }
+  },
+  "field": {
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Jane Okafor",
+    "displayName": "Display name",
+    "email": "Email",
+    "emailPlaceholder": "jane@threadline.dev",
+    "jobTitle": "Job title",
+    "jobTitlePlaceholder": "Backend Engineer",
+    "address": "Address",
+    "addressPlaceholder": "412 Bathurst St, Toronto, ON",
+    "timezone": "Timezone",
+    "employmentStart": "Employment start",
+    "employmentEnd": "Employment end",
+    "activeEmployee": "Active employee",
+    "platform": "Platform"
+  }
+}

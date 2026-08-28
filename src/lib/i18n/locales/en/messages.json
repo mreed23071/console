@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "title": "Messages · Threadline Console",
+    "description": "Every retained message with platform, sender, filter category and timestamp.",
+    "ogDescription": "Filter ingested messages by platform, category and date."
+  },
+  "title": "Messages",
+  "description": "Retained messages and GitHub commits collected across every connector.",
+  "searchPlaceholder": "Search message content…",
+  "emptyTitle": "No messages match these filters",
+  "emptyDescription": "Try widening the date range or clearing the platform and category filters.",
+  "column": {
+    "platform": "Platform",
+    "sender": "Sender",
+    "content": "Content",
+    "type": "Type",
+    "category": "Category",
+    "sent": "Sent"
+  },
+  "kind": {
+    "message": "Message",
+    "commit": "Commit"
+  },
+  "sender": {
+    "unresolved": "Unresolved account",
+    "unresolvedValue": "Unresolved",
+    "linkTooltip": "Link this account to a person",
+    "unavailableTooltip": "Account details unavailable"
+  },
+  "filter": {
+    "searchLabel": "Search message content",
+    "platformLabel": "Filter by platform",
+    "categoryLabel": "Filter by category",
+    "allPlatforms": "All platforms",
+    "allCategories": "All categories",
+    "fromDate": "From date",
+    "toDate": "To date"
+  },
+  "commitMeta_one": "{{repository}} · {{count}} file · {{sha}}",
+  "commitMeta_other": "{{repository}} · {{count}} files · {{sha}}",
+  "commit": {
+    "filesChanged_one": "{{count}} file changed",
+    "filesChanged_other": "{{count}} files changed",
+    "viewOnGitHub": "View on GitHub",
+    "aiSummary": "AI summary of this commit",
+    "generatedAt": "Generated {{date}}",
+    "filesTitle": "Files changed",
+    "status": {
+      "added": "Added",
+      "modified": "Modified",
+      "removed": "Removed"
+    }
+  }
+}

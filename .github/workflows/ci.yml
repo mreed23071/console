@@ -1,0 +1,52 @@
+name: CI
+
+# Every check below is a script in package.json, so "passes CI" and "passes
+# locally" mean the same thing. If you change one, change the other.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: Types, lint, format, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      # --frozen-lockfile fails rather than resolving, so CI can never quietly
+      # install something different from what a developer has.
+      - run: bun install --frozen-lockfile
+
+      # Run all four even when an earlier one fails: one push should tell you
+      # everything that is wrong, not just the first thing.
+      - name: Typecheck
+        run: bun run typecheck
+        if: ${{ !cancelled() }}
+
+      - name: Lint
+        run: bun run lint
+        if: ${{ !cancelled() }}
+
+      - name: Format
+        run: bun run format:check
+        if: ${{ !cancelled() }}
+
+      - name: Tests
+        run: bun run test
+        if: ${{ !cancelled() }}
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run build
