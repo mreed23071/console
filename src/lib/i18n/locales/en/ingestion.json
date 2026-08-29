@@ -58,5 +58,12 @@
     "success": "success",
     "partial": "partial",
     "failed": "failed"
+  },
+  "activeIndicator": {
+    "running_one": "{{count}} ingestion run active",
+    "running_other": "{{count}} ingestion runs active"
+  },
+  "activeList": {
+    "title": "In progress"
   }
 }

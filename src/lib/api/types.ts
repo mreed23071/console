@@ -141,6 +141,22 @@ export interface RunProgress {
   result: IngestionRun | null;
 }
 
+/** One in-flight run, as much as is cheap to know about it live. */
+export interface ActiveRun {
+  run_id: string;
+  platform: Platform | null;
+  stage: string;
+  started_at: string;
+}
+
+/** Whether ingestion is running right now, anywhere - not history, not one
+ * platform. Backs a console-wide indicator and the Runs page's in-progress
+ * section. */
+export interface ActiveRuns {
+  count: number;
+  runs: ActiveRun[];
+}
+
 export interface IngestionConfig {
   platform: Platform;
   filter_system_prompt: string;

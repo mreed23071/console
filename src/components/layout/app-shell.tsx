@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/features/auth";
+import { ActiveRunIndicator } from "@/features/ingestion";
 import { useAppPreferences } from "@/hooks/use-app-preferences";
 import { useCommandShortcut } from "@/hooks/use-command-shortcut";
 import { useUIStore } from "@/stores/ui";
@@ -59,6 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </kbd>
           </Button>
           <div className="ml-auto flex items-center gap-2">
+            <ActiveRunIndicator />
             <Badge variant="outline" className="hidden font-mono text-xs sm:inline-flex">
               {t("footer.environment", { name: "local" })}
             </Badge>

@@ -20,6 +20,33 @@ export type AccountDeleteResponse = {
     deleted_messages: number;
 };
 
+/**
+ * One in-flight run, for the Runs page's "in progress" section.
+ */
+export type ActiveRunRead = {
+    platform?: Platform | null;
+    run_id: string;
+    /**
+     * Current pipeline stage: fetching, filtering, embedding, ...
+     */
+    stage: string;
+    started_at: string;
+};
+
+/**
+ * Whether ingestion is running right now, anywhere - not history, not one
+ * platform's status. Reads Temporal's live state directly, so a run appears
+ * here the instant it starts, well before `record_run` gives it a row in
+ * `GET /ingestion/runs`.
+ */
+export type ActiveRunsResponse = {
+    /**
+     * How many ingestion runs are in flight right now.
+     */
+    count: number;
+    runs?: Array<ActiveRunRead>;
+};
+
 export type BodyLinkAccount = {
     /**
      * Who to attribute it to.
@@ -1021,6 +1048,35 @@ export type ListIngestionRunsResponses = {
 };
 
 export type ListIngestionRunsResponse = ListIngestionRunsResponses[keyof ListIngestionRunsResponses];
+
+export type GetActiveRunsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/ingestion/runs/active';
+};
+
+export type GetActiveRunsErrors = {
+    /**
+     * Authentication required or invalid.
+     */
+    401: ErrorResponse;
+    /**
+     * Authenticated but not permitted.
+     */
+    403: ErrorResponse;
+};
+
+export type GetActiveRunsError = GetActiveRunsErrors[keyof GetActiveRunsErrors];
+
+export type GetActiveRunsResponses = {
+    /**
+     * Successful Response
+     */
+    200: ActiveRunsResponse;
+};
+
+export type GetActiveRunsResponse = GetActiveRunsResponses[keyof GetActiveRunsResponses];
 
 export type RunIngestionData = {
     body?: IngestionRunRequest | null;

@@ -158,7 +158,7 @@ works.
 schema, and exporting a schema needs a running backend:
 
 ```bash
-cd ../mabisoft && make openapi   # app  -> openapi/v1.json
+cd ../mabinsoft && make openapi   # app  -> openapi/v1.json
 bun run openapi:generate         # that -> src/lib/api/generated/
 ```
 

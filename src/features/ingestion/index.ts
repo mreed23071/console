@@ -1,4 +1,6 @@
 export * from "./api/queries";
+export { ActiveRunIndicator } from "./components/active-run-indicator";
+export { ActiveRunsList } from "./components/active-runs-list";
 export { RunDetailSheet } from "./components/run-detail-sheet";
 export { RunProgress } from "./components/run-progress";
 export { TriggerRunButton } from "./components/trigger-run-button";

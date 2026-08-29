@@ -24,6 +24,7 @@
  * can rely on, not everything the schema happens to expose.
  */
 import type {
+  ActiveRunsResponse,
   CommitDetail as ApiCommitDetail,
   ConnectorRead,
   FilterDecisionRead,
@@ -44,6 +45,7 @@ import type {
 } from "@/lib/api/generated/types.gen";
 
 import type {
+  ActiveRuns,
   CommitDetail,
   ConnectedAccount,
   Connector,
@@ -157,6 +159,16 @@ export const toNote = (row: NoteRead): PersonNote => ({
 export const toForgetResult = (row: ApiForgetUserResponse): ForgetUserResult => ({
   deleted_messages: row.deleted_messages,
   deleted_accounts: row.deleted_accounts,
+});
+
+export const toActiveRuns = (row: ActiveRunsResponse): ActiveRuns => ({
+  count: row.count,
+  runs: (row.runs ?? []).map((run) => ({
+    run_id: run.run_id,
+    platform: run.platform ?? null,
+    stage: run.stage,
+    started_at: run.started_at,
+  })),
 });
 
 /**

@@ -29,6 +29,7 @@ import {
   deleteNote,
   deleteOrgNode as apiDeleteOrgNode,
   forgetUser as apiForgetUser,
+  getActiveRuns as apiGetActiveRuns,
   getIngestionConfig as apiGetIngestionConfig,
   getRunStatus as apiGetRunStatus,
   getUser as apiGetUser,
@@ -51,6 +52,7 @@ import {
 
 import { getRoot } from "../../http";
 import type {
+  ActiveRuns,
   ConnectedAccount,
   Connector,
   HealthResponse,
@@ -78,6 +80,7 @@ import type { CreateOrgNodeInput, UpdateOrgNodePatch } from "../org";
 import type { CreatePersonInput, ForgetUserResult } from "../people";
 import {
   toAccount,
+  toActiveRuns,
   toConnector,
   toForgetResult,
   toIngestionConfig,
@@ -338,6 +341,9 @@ export const getRunStatus = async (platform: Platform, runId: string): Promise<R
 
 export const getIngestionConfig = async (platform: Platform): Promise<IngestionConfig> =>
   toIngestionConfig((await apiGetIngestionConfig({ path: { platform }, throwOnError: true })).data);
+
+export const getActiveRuns = async (): Promise<ActiveRuns> =>
+  toActiveRuns((await apiGetActiveRuns({ throwOnError: true })).data);
 
 // -- unversioned probes ------------------------------------------------
 //

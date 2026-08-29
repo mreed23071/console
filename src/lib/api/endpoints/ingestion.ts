@@ -1,5 +1,12 @@
 import { ingestionConfig, ingestionRuns } from "../mock";
-import type { IngestionConfig, IngestionRun, Platform, QueuedRun, RunProgress } from "../types";
+import type {
+  ActiveRuns,
+  IngestionConfig,
+  IngestionRun,
+  Platform,
+  QueuedRun,
+  RunProgress,
+} from "../types";
 import { delay } from "./_shared";
 
 export interface TriggerRunOptions {
@@ -88,6 +95,18 @@ export async function getRunStatus(platform: Platform, runId: string): Promise<R
     persisted: run.persisted,
     result: run,
   };
+}
+
+/**
+ * GET /api/v1/ingestion/runs/active
+ *
+ * The mock's `triggerIngestionRun` resolves a run instantly (see its own
+ * comment) - there is never anything actually in flight to report, the same
+ * honest answer the real API gives when Temporal is disabled.
+ */
+export async function getActiveRuns(): Promise<ActiveRuns> {
+  await delay(80);
+  return { count: 0, runs: [] };
 }
 
 /** GET /api/v1/ingestion/config/{platform} */

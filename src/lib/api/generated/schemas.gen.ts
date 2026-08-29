@@ -51,6 +51,63 @@ export const AccountDeleteResponseSchema = {
     type: 'object'
 } as const;
 
+export const ActiveRunReadSchema = {
+    description: `One in-flight run, for the Runs page's "in progress" section.`,
+    properties: {
+        platform: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/Platform'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        run_id: {
+            title: 'Run Id',
+            type: 'string'
+        },
+        stage: {
+            description: 'Current pipeline stage: fetching, filtering, embedding, ...',
+            title: 'Stage',
+            type: 'string'
+        },
+        started_at: {
+            format: 'date-time',
+            title: 'Started At',
+            type: 'string'
+        }
+    },
+    required: ['run_id', 'stage', 'started_at'],
+    title: 'ActiveRunRead',
+    type: 'object'
+} as const;
+
+export const ActiveRunsResponseSchema = {
+    description: `Whether ingestion is running right now, anywhere - not history, not one
+platform's status. Reads Temporal's live state directly, so a run appears
+here the instant it starts, well before \`record_run\` gives it a row in
+\`GET /ingestion/runs\`.`,
+    properties: {
+        count: {
+            description: 'How many ingestion runs are in flight right now.',
+            title: 'Count',
+            type: 'integer'
+        },
+        runs: {
+            items: {
+                '$ref': '#/components/schemas/ActiveRunRead'
+            },
+            title: 'Runs',
+            type: 'array'
+        }
+    },
+    required: ['count'],
+    title: 'ActiveRunsResponse',
+    type: 'object'
+} as const;
+
 export const Body_link_accountSchema = {
     properties: {
         user_id: {

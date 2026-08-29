@@ -1,5 +1,6 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DataTable } from "@/components/common/data-table";
@@ -14,16 +15,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  ActiveRunsList,
   RunDetailSheet,
   RunProgress,
   TriggerRunButton,
+  useActiveRuns,
   useIngestionRuns,
   useRunColumnLabels,
   useRunColumns,
+  useRunStatus,
   useTrackedRun,
 } from "@/features/ingestion";
-import type { IngestionRun, Platform } from "@/lib/api/types";
+import type { ActiveRun, IngestionRun, Platform } from "@/lib/api/types";
 import { i18n } from "@/lib/i18n";
+import { queryKeys } from "@/lib/query-keys";
 
 //: Mirrors the backend's connector registry - only these three platforms
 //: have a mock source wired up, so triggering any other would just 404.
@@ -44,13 +49,27 @@ export const Route = createFileRoute("/_authenticated/runs")({
 function RunsPage() {
   const { t } = useTranslation("ingestion");
   const platformLabels = usePlatformLabels();
+  const queryClient = useQueryClient();
   const runs = useIngestionRuns();
+  const activeRuns = useActiveRuns();
   const columns = useRunColumns();
   const columnLabels = useRunColumnLabels();
 
   const [selected, setSelected] = useState<IngestionRun | null>(null);
   const [triggerPlatform, setTriggerPlatform] = useState<Platform>("slack");
   const run = useTrackedRun(triggerPlatform);
+
+  const [watching, setWatching] = useState<ActiveRun | null>(null);
+  const watchedStatus = useRunStatus(watching?.platform ?? null, watching?.run_id ?? null);
+
+  useEffect(() => {
+    if (!watching) return;
+    const status = watchedStatus.data?.status;
+    if (status === "completed" || status === "failed" || status === "cancelled") {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingestion.all });
+      setWatching(null);
+    }
+  }, [watching, watchedStatus.data?.status, queryClient]);
 
   return (
     <div>
@@ -81,6 +100,13 @@ function RunsPage() {
       />
 
       {run.progress && run.running && <RunProgress progress={run.progress} />}
+
+      {watchedStatus.data && <RunProgress progress={watchedStatus.data} />}
+
+      <ActiveRunsList
+        runs={(activeRuns.data?.runs ?? []).filter((r) => r.run_id !== watching?.run_id)}
+        onSelect={setWatching}
+      />
 
       {runs.isError ? (
         <ErrorState onRetry={() => runs.refetch()} />
