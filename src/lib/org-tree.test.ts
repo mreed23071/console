@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { OrgNode } from "./api/types";
 import {
   depthById,
+  type DropTarget,
   eligibleParents,
   findMemberNode,
   getChildren,
@@ -11,15 +12,22 @@ import {
   indexChildren,
   nodeByMemberId,
   requiresReassignConfirmation,
+  resolveDrop,
   wouldCreateCycle,
 } from "./org-tree";
 
 /** Minimal node factory — only the fields the tree logic reads. */
-const node = (id: string, parent_id: string | null = null, member_ids: string[] = []): OrgNode => ({
+const node = (
+  id: string,
+  parent_id: string | null = null,
+  member_ids: string[] = [],
+  position = 0,
+): OrgNode => ({
   id,
   name: id,
   subtitle: "",
   parent_id,
+  position,
   member_ids,
   created_at: "2026-01-01T00:00:00.000Z",
 });
@@ -180,5 +188,60 @@ describe("requiresReassignConfirmation", () => {
 
   it("does not confirm when no department has any members", () => {
     expect(requiresReassignConfirmation([node("a"), node("b")], "amara", "a")).toBe(false);
+  });
+});
+
+describe("resolveDrop", () => {
+  const slot = (parentId: string | null, index: number): DropTarget => ({
+    kind: "slot",
+    parentId,
+    index,
+  });
+  const onto = (nodeId: string): DropTarget => ({ kind: "onto", nodeId });
+
+  it("resolves a slot to that exact parent and position", () => {
+    expect(resolveDrop(tree(), "b", slot("a", 1))).toEqual({
+      parentId: "a",
+      position: 1,
+      valid: true,
+    });
+  });
+
+  it("resolves a root slot with a null parent", () => {
+    expect(resolveDrop(tree(), "a", slot(null, 0))).toEqual({
+      parentId: null,
+      position: 0,
+      valid: true,
+    });
+  });
+
+  it("resolves dropping onto a node as becoming its last child", () => {
+    // "b" has no children, so it lands at index 0.
+    expect(resolveDrop(tree(), "a1", onto("b"))).toEqual({
+      parentId: "b",
+      position: 0,
+      valid: true,
+    });
+  });
+
+  it("appends after existing children when dropping onto a node that has some", () => {
+    // "a" already has a1 and a2.
+    expect(resolveDrop(tree(), "b", onto("a")).position).toBe(2);
+  });
+
+  it("rejects dropping a node onto itself", () => {
+    expect(resolveDrop(tree(), "a", onto("a")).valid).toBe(false);
+  });
+
+  it("rejects dropping a node onto its own descendant", () => {
+    expect(resolveDrop(tree(), "a", onto("a1")).valid).toBe(false);
+  });
+
+  it("rejects a slot inside a node's own subtree", () => {
+    expect(resolveDrop(tree(), "a", slot("a1", 0)).valid).toBe(false);
+  });
+
+  it("allows a slot among unrelated siblings", () => {
+    expect(resolveDrop(tree(), "a1", slot("root", 0)).valid).toBe(true);
   });
 });

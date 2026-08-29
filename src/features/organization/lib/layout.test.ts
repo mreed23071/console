@@ -2,13 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import type { OrgNode } from "@/lib/api/types";
 
-import { H_GAP, layoutTree, NODE_H, NODE_W, V_GAP } from "./layout";
+import { computeSlots, H_GAP, layoutTree, NODE_H, NODE_W, SLOT_W, V_GAP } from "./layout";
 
-const node = (id: string, parent_id: string | null = null): OrgNode => ({
+const node = (id: string, parent_id: string | null = null, position = 0): OrgNode => ({
   id,
   name: id,
   subtitle: "",
   parent_id,
+  position,
   member_ids: [],
   created_at: "2026-01-01T00:00:00.000Z",
 });
@@ -125,5 +126,54 @@ describe("layoutTree", () => {
     const layout = layoutTree(chain);
     expect(layout.nodes).toHaveLength(400);
     expect(performance.now() - started).toBeLessThan(1000);
+  });
+});
+
+describe("computeSlots", () => {
+  it("produces no slots for a parent with no children", () => {
+    const nodes = [node("r"), node("leaf", "r")];
+    const slots = computeSlots(nodes, layoutTree(nodes));
+    expect(slots.filter((s) => s.parentId === "leaf")).toEqual([]);
+  });
+
+  it("produces no slots at all when there are no departments", () => {
+    expect(computeSlots([], layoutTree([]))).toEqual([]);
+  });
+
+  it("produces n+1 slots for a parent with n children", () => {
+    const nodes = [node("r"), node("a", "r"), node("b", "r"), node("c", "r")];
+    const slots = computeSlots(nodes, layoutTree(nodes));
+    expect(slots.filter((s) => s.parentId === "r")).toHaveLength(4);
+  });
+
+  it("orders slot x positions left to right, matching sibling order", () => {
+    const nodes = [node("r"), node("a", "r"), node("b", "r")];
+    const slots = computeSlots(nodes, layoutTree(nodes))
+      .filter((s) => s.parentId === "r")
+      .sort((x, y) => x.index - y.index);
+    for (let i = 1; i < slots.length; i++) {
+      expect(slots[i]!.x).toBeGreaterThan(slots[i - 1]!.x);
+    }
+  });
+
+  it("places every slot on its parent's own row", () => {
+    const nodes = [node("r"), node("a", "r"), node("b", "r")];
+    const layout = layoutTree(nodes);
+    const slots = computeSlots(nodes, layout).filter((s) => s.parentId === "r");
+    expect(slots.every((s) => s.y === at(layout, "a").y)).toBe(true);
+  });
+
+  it("covers root-level departments under a null parent", () => {
+    const nodes = [node("a"), node("b")];
+    const slots = computeSlots(nodes, layoutTree(nodes));
+    expect(slots.filter((s) => s.parentId === null)).toHaveLength(3);
+  });
+
+  it("keeps between-slots clear of the neighbouring node boxes", () => {
+    const nodes = [node("r"), node("a", "r"), node("b", "r")];
+    const layout = layoutTree(nodes);
+    const between = computeSlots(nodes, layout).find((s) => s.parentId === "r" && s.index === 1)!;
+    expect(between.x).toBeGreaterThan(at(layout, "a").x);
+    expect(between.x + SLOT_W).toBeLessThan(at(layout, "b").x + NODE_W);
   });
 });

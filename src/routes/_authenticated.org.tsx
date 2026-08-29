@@ -116,7 +116,12 @@ function OrganizationPage() {
                 onSelect={setSelectedId}
               />
             ) : (
-              <OrgChart nodes={nodes} selectedId={selected?.id ?? null} onSelect={setSelectedId} />
+              <OrgChart
+                nodes={nodes}
+                selectedId={selected?.id ?? null}
+                onSelect={setSelectedId}
+                canEdit={canEdit}
+              />
             )}
           </CardContent>
         </Card>

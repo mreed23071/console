@@ -89,6 +89,18 @@
     "description": "{{person}} is currently in {{from}}. Assigning them to {{to}} removes them from {{from}} — a person belongs to one department at a time.",
     "confirm": "Move person"
   },
+  "move": {
+    "title": "Move {{name}}?",
+    "descriptionParent": "This moves {{name}} under {{parent}}, changing its reporting line.",
+    "descriptionRoot": "This moves {{name}} to the top level, changing its reporting line.",
+    "impactDepartments_one": "{{count}} sub-department moves with it.",
+    "impactDepartments_other": "{{count}} sub-departments move with it.",
+    "impactPeople_one": "{{count}} assigned person moves with it.",
+    "impactPeople_other": "{{count}} assigned people move with it.",
+    "confirm": "Move department",
+    "success": "{{name}} was moved",
+    "error": "Could not move that department"
+  },
   "delete": {
     "title": "Delete {{name}}?",
     "description": "Any sub-departments move up to this department's parent. People are only unassigned — their records are not deleted.",

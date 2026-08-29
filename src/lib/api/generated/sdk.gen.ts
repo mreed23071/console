@@ -421,6 +421,8 @@ export const deleteOrgNode = <ThrowOnError extends boolean = false>(options: Opt
  * Rename a department or move it in the hierarchy
  * Send `reparent: true` to apply `parent_id`, including null to make the department a root. Without it, `parent_id` would be ambiguous with 'leave the parent alone'.
  *
+ * Send `position` to place it among its siblings - alone, this reorders among its current ones; combined with `reparent`, among its new ones (omitted, it appends to the end).
+ *
  * Returns 422 if the move would make a department report to itself or to one of its own sub-departments - which would cut that branch loose from the organization.
  */
 export const updateOrgNode = <ThrowOnError extends boolean = false>(options: Options<UpdateOrgNodeData, ThrowOnError>) => {

@@ -998,6 +998,11 @@ export const OrgNodeReadSchema = {
             description: 'Null when this node is a root.',
             title: 'Parent Id'
         },
+        position: {
+            description: "0-indexed order among this node's siblings.",
+            title: 'Position',
+            type: 'integer'
+        },
         subtitle: {
             anyOf: [
                 {
@@ -1010,7 +1015,7 @@ export const OrgNodeReadSchema = {
             title: 'Subtitle'
         }
     },
-    required: ['id', 'name', 'created_at'],
+    required: ['id', 'name', 'position', 'created_at'],
     title: 'OrgNodeRead',
     type: 'object'
 } as const;
@@ -1051,6 +1056,19 @@ should get an error, not a success that changed nothing.`,
                 }
             ],
             title: 'Parent Id'
+        },
+        position: {
+            anyOf: [
+                {
+                    minimum: 0,
+                    type: 'integer'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            description: "0-indexed target position among the node's siblings. Sent alone, reorders among its current siblings. Sent with `reparent`, places it at this index among its new ones; omitted during a reparent, it appends to the end instead.",
+            title: 'Position'
         },
         reparent: {
             default: false,

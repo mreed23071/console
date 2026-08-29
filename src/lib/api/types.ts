@@ -220,6 +220,8 @@ export interface OrgNode {
   name: string;
   subtitle: string;
   parent_id: string | null;
+  /** 0-indexed order among this node's siblings. */
+  position: number;
   /** Ids of the people assigned here. A person belongs to one node at a time. */
   member_ids: string[];
   created_at: string;

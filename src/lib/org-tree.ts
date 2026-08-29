@@ -146,3 +146,46 @@ export function requiresReassignConfirmation(
   const current = findMemberNode(nodes, userId);
   return current !== null && current.id !== targetNodeId;
 }
+
+/**
+ * Where a drag-and-drop chart drop is aimed.
+ *
+ * `slot` is a gap between (or before/after) a parent's children — the target
+ * is a *position*, not a node. `onto` is dropping directly on a node, which
+ * means "become its last child" rather than reordering among its siblings.
+ */
+export type DropTarget =
+  { kind: "slot"; parentId: string | null; index: number } | { kind: "onto"; nodeId: string };
+
+export interface DropResolution {
+  parentId: string | null;
+  position: number;
+  /** False when the drop would create a cycle (onto itself or its own
+   * subtree) — the caller should show no drop indicator for it at all,
+   * this is not something the API needs to reject after the fact. */
+  valid: boolean;
+}
+
+/**
+ * Turns a drag-and-drop target into the `(parent_id, position)` a drop there
+ * would produce, and whether it's legal at all.
+ *
+ * Reuses `wouldCreateCycle` for validity, deliberately: it is the same rule
+ * that already guards the "Reports to" picker, and a drop that picker would
+ * refuse must be refused here too, not just be a worse way to express it.
+ */
+export function resolveDrop(
+  nodes: OrgNode[],
+  draggedId: string,
+  target: DropTarget,
+): DropResolution {
+  if (target.kind === "onto") {
+    const parentId = target.nodeId;
+    const position = getChildren(indexChildren(nodes), parentId).length;
+    const valid = parentId !== draggedId && !wouldCreateCycle(nodes, draggedId, parentId);
+    return { parentId, position, valid };
+  }
+
+  const { parentId, index } = target;
+  return { parentId, position: index, valid: !wouldCreateCycle(nodes, draggedId, parentId) };
+}

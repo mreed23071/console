@@ -7,12 +7,12 @@
  * re-measures the whole subtree beneath it.
  */
 import type { OrgNode } from "@/lib/api/types";
-import { type ChildIndex, getChildren, getRoots, indexChildren } from "@/lib/org-tree";
+import { type ChildIndex, getChildren, getRoots, indexChildren, ROOT_KEY } from "@/lib/org-tree";
 
 export const NODE_W = 190;
 export const NODE_H = 60;
 /** Horizontal gap between sibling subtrees. */
-export const H_GAP = 26;
+export const H_GAP = 32;
 /** Vertical gap between a node and its children. */
 export const V_GAP = 84;
 /** Gap between separate root trees. */
@@ -127,4 +127,52 @@ export function layoutTree(nodes: OrgNode[]): OrgLayout {
     width: Math.max(cursor - ROOT_GAP, NODE_W),
     height: positioned.reduce((max, p) => Math.max(max, p.y + NODE_H), NODE_H),
   };
+}
+
+export interface Slot {
+  /** null means this slot sits among the root-level departments. */
+  parentId: string | null;
+  /** Position this slot would place a dropped node at, 0-indexed. */
+  index: number;
+  x: number;
+  y: number;
+}
+
+/** Width of a slot's own drop hit-area, in canvas pixels. */
+export const SLOT_W = 28;
+
+/**
+ * Insertion points between (and around) a parent's children, in the same
+ * coordinate space `layoutTree` already produced — one before the first
+ * child, one between each pair, one after the last.
+ *
+ * Only computed for parents that currently have at least one child. A
+ * childless parent has nothing to insert *between* — dragging onto it is a
+ * plain "append as first child" instead, which drops directly on the parent
+ * node itself rather than on a slot (see `resolveDrop`'s "onto" case).
+ */
+export function computeSlots(nodes: OrgNode[], layout: OrgLayout): Slot[] {
+  const positioned = new Map(layout.nodes.map((p) => [p.node.id, p]));
+  const index = indexChildren(nodes);
+  const slots: Slot[] = [];
+
+  const groupKeys = new Set([ROOT_KEY, ...nodes.map((n) => n.id)]);
+  for (const key of groupKeys) {
+    const parentId = key === ROOT_KEY ? null : key;
+    const children = getChildren(index, key)
+      .map((n) => positioned.get(n.id))
+      .filter((p): p is PositionedNode => p !== undefined);
+    if (children.length === 0) continue;
+
+    const y = children[0]!.y;
+    slots.push({ parentId, index: 0, x: children[0]!.x - H_GAP, y });
+    for (let i = 1; i < children.length; i++) {
+      const mid = (children[i - 1]!.x + children[i]!.x) / 2 + NODE_W / 2;
+      slots.push({ parentId, index: i, x: mid - SLOT_W / 2, y });
+    }
+    const lastChild = children[children.length - 1]!;
+    slots.push({ parentId, index: children.length, x: lastChild.x + NODE_W + H_GAP - SLOT_W, y });
+  }
+
+  return slots;
 }

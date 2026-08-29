@@ -411,6 +411,10 @@ export type OrgNodeRead = {
      * Null when this node is a root.
      */
     parent_id?: string | null;
+    /**
+     * 0-indexed order among this node's siblings.
+     */
+    position: number;
     subtitle?: string | null;
 };
 
@@ -429,6 +433,10 @@ export type OrgNodeRead = {
 export type OrgNodeUpdate = {
     name?: string | null;
     parent_id?: string | null;
+    /**
+     * 0-indexed target position among the node's siblings. Sent alone, reorders among its current siblings. Sent with `reparent`, places it at this index among its new ones; omitted during a reparent, it appends to the end instead.
+     */
+    position?: number | null;
     /**
      * Set true to apply `parent_id`, including null to make this a root.
      */

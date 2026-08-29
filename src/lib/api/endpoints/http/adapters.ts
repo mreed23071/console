@@ -141,6 +141,7 @@ export const toOrgNode = (row: OrgNodeRead): OrgNode => ({
   name: row.name,
   subtitle: row.subtitle ?? "",
   parent_id: row.parent_id ?? null,
+  position: row.position,
   member_ids: row.member_ids ?? [],
   created_at: row.created_at,
 });
