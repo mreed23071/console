@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Messages · Threadline Console",
+    "title": "Messages · Mabinsoft Console",
     "description": "Every retained message with platform, sender, filter category and timestamp.",
     "ogDescription": "Filter ingested messages by platform, category and date."
   },

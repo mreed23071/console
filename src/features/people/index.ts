@@ -13,3 +13,4 @@ export { PersonNotesCard } from "./components/person-notes-card";
 export { PersonSummaryCard } from "./components/person-summary-card";
 export { UnresolvedAccountsCard } from "./components/unresolved-accounts-card";
 export { usePeopleColumnLabels, usePeopleColumns } from "./components/use-people-columns";
+export { type AddPersonFormValues, personFormSchema } from "./lib/schemas";

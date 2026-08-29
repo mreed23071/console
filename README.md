@@ -1,6 +1,6 @@
-# Threadline Console — front end
+# Mabinsoft Console — front end
 
-React front end for the Threadline FastAPI backend. Resolves scattered platform
+React front end for the Mabinsoft FastAPI backend. Resolves scattered platform
 identities (Slack, GitHub, Teams, Email, Linear) into single person records and
 summarises what each person has been working on.
 

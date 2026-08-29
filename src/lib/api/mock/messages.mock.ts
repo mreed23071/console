@@ -65,11 +65,11 @@ const CATEGORY_WEIGHTS: FilterCategory[] = [
 // ---- GitHub commits -------------------------------------------------------
 
 const REPOS = [
-  "threadline/ingestion-worker",
-  "threadline/api",
-  "threadline/console",
-  "threadline/connectors",
-  "threadline/infra",
+  "mabinsoft/ingestion-worker",
+  "mabinsoft/api",
+  "mabinsoft/console",
+  "mabinsoft/connectors",
+  "mabinsoft/infra",
 ];
 
 const COMMIT_SUBJECTS = [

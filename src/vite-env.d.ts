@@ -9,7 +9,7 @@
  * anything else stays server-side.
  */
 interface ImportMetaEnv {
-  /** Base URL for the Threadline API. Defaults to the in-browser mock at /v1. */
+  /** Base URL for the Mabinsoft API. Defaults to the in-browser mock at /v1. */
   readonly VITE_API_BASE_URL?: string;
   /**
    * Set to "false" to call the real API instead of the in-browser mock

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Integrations · Threadline Console",
+    "title": "Integrations · Mabinsoft Console",
     "description": "Connector health for Slack, GitHub, Teams, Email and Linear, with last sync and volume.",
     "ogDescription": "Platform connector status and ingestion controls."
   },

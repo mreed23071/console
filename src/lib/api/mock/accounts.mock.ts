@@ -6,9 +6,9 @@ import { DAY, int, iso, NOW, PLATFORMS, rnd, slugify } from "./random";
 const UNRESOLVED: Array<[Platform, string, string]> = [
   ["github", "m-reedbennett", "mreed@users.noreply.github.com"],
   ["github", "octo-deploybot", "deploy@acme-labs.io"],
-  ["slack", "@t.novak", "tomas.novak@threadline.dev"],
+  ["slack", "@t.novak", "tomas.novak@mabinsoft.dev"],
   ["email", "a.silva@contractor.dev", "a.silva@contractor.dev"],
-  ["linear", "@lpark", "lena.park@threadline.dev"],
+  ["linear", "@lpark", "lena.park@mabinsoft.dev"],
 ];
 
 /** Builds a fresh copy of the table from whatever `people` currently holds. */

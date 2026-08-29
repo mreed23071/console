@@ -78,7 +78,7 @@ describe("getUser", () => {
 });
 
 describe("createUser", () => {
-  const input = { full_name: "Jane Okafor", email: "jane@threadline.dev" };
+  const input = { full_name: "Jane Okafor", email: "jane@mabinsoft.dev" };
 
   it("adds the person", async () => {
     const created = await createUser(input);

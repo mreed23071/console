@@ -21,7 +21,7 @@
   },
   "error": {
     "title": "Couldn't load this data",
-    "description": "The request to the Threadline API failed.",
+    "description": "The request to the Mabinsoft API failed.",
     "pageTitle": "This page didn't load",
     "pageDescription": "Something went wrong on our end. You can try refreshing or head back home.",
     "notFoundTitle": "Page not found",

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Settings · Threadline Console",
+    "title": "Settings · Mabinsoft Console",
     "description": "Profile, role/persona switching, theme preference and build information for the console.",
     "ogDescription": "Console preferences and mocked scope model."
   },
@@ -40,7 +40,7 @@
   "build": {
     "title": "Build info",
     "app": "App",
-    "appValue": "Threadline Console",
+    "appValue": "Mabinsoft Console",
     "build": "Build",
     "buildValue": "poc-0.4.2",
     "dataSource": "Data source",

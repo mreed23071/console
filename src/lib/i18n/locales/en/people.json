@@ -1,9 +1,9 @@
 {
   "meta": {
-    "listTitle": "People · Threadline Console",
+    "listTitle": "People · Mabinsoft Console",
     "listDescription": "Every resolved person record with their connected platform identities and message volume.",
     "listOgDescription": "Resolved identities across Slack, GitHub, Teams and more.",
-    "detailTitle": "Person profile · Threadline Console",
+    "detailTitle": "Person profile · Mabinsoft Console",
     "detailDescription": "Connected accounts, generated activity summary and recent verbatim messages for one person.",
     "detailOgDescription": "One resolved record across every connected platform."
   },
@@ -99,6 +99,15 @@
     "emptyTitle": "No notes yet",
     "emptyDescription": "Admin notes about this person will appear here."
   },
+  "setup": {
+    "metaTitle": "Set up Mabinsoft · Mabinsoft Console",
+    "metaDescription": "Create the first employee record before using the console.",
+    "title": "Welcome to Mabinsoft",
+    "description": "No employees are on file yet. Add the first one to get started — for now this just creates a person record; account privileges come later.",
+    "submit": "Create first employee",
+    "success": "{{name}} added — you're all set",
+    "error": "Could not create this record"
+  },
   "dialog": {
     "add": {
       "title": "Add person",
@@ -140,7 +149,7 @@
     "fullNamePlaceholder": "Jane Okafor",
     "displayName": "Display name",
     "email": "Email",
-    "emailPlaceholder": "jane@threadline.dev",
+    "emailPlaceholder": "jane@mabinsoft.dev",
     "jobTitle": "Job title",
     "jobTitlePlaceholder": "Backend Engineer",
     "address": "Address",

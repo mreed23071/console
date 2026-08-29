@@ -14,7 +14,7 @@ describe("getUserNotes", () => {
   });
 
   it("returns newest first", async () => {
-    await createUserNote("usr_0002", "newer", "admin@threadline.dev");
+    await createUserNote("usr_0002", "newer", "admin@mabinsoft.dev");
     const notes = await getUserNotes("usr_0002");
     for (let i = 1; i < notes.length; i++) {
       expect(notes[i - 1]!.created_at >= notes[i]!.created_at).toBe(true);
@@ -28,23 +28,23 @@ describe("getUserNotes", () => {
 
 describe("createUserNote", () => {
   it("stores the body and author against the person", async () => {
-    const note = await createUserNote("usr_0001", "Handle with care", "admin@threadline.dev");
+    const note = await createUserNote("usr_0001", "Handle with care", "admin@mabinsoft.dev");
     expect(note).toMatchObject({
       user_id: "usr_0001",
       body: "Handle with care",
-      author: "admin@threadline.dev",
+      author: "admin@mabinsoft.dev",
     });
   });
 
   it("makes the note readable straight away", async () => {
-    await createUserNote("usr_0001", "Handle with care", "admin@threadline.dev");
+    await createUserNote("usr_0001", "Handle with care", "admin@mabinsoft.dev");
     expect(await getUserNotes("usr_0001")).toHaveLength(1);
   });
 });
 
 describe("deleteUserNote", () => {
   it("removes the note", async () => {
-    const note = await createUserNote("usr_0001", "temp", "admin@threadline.dev");
+    const note = await createUserNote("usr_0001", "temp", "admin@mabinsoft.dev");
     await deleteUserNote(note.id);
     expect(await getUserNotes("usr_0001")).toEqual([]);
   });

@@ -14,26 +14,26 @@ beforeEach(reset);
 
 describe("signIn", () => {
   it("stores the session", () => {
-    signIn("amara.osei@threadline.dev", "admin");
+    signIn("amara.osei@mabinsoft.dev", "admin");
     expect(useAuthStore.getState().session).toMatchObject({
-      email: "amara.osei@threadline.dev",
+      email: "amara.osei@mabinsoft.dev",
       persona: "admin",
     });
   });
 
   it("derives a display name from the email local part", () => {
-    signIn("amara.osei@threadline.dev", "admin");
+    signIn("amara.osei@mabinsoft.dev", "admin");
     expect(useAuthStore.getState().session!.name).toBe("Amara Osei");
   });
 
   it("handles underscores and hyphens as separators", () => {
-    signIn("jane_okafor-smith@threadline.dev", "analyst");
+    signIn("jane_okafor-smith@mabinsoft.dev", "analyst");
     expect(useAuthStore.getState().session!.name).toBe("Jane Okafor Smith");
   });
 
   it("falls back to a persona address when no email is given", () => {
     signIn("", "viewer");
-    expect(useAuthStore.getState().session!.email).toBe("viewer@threadline.dev");
+    expect(useAuthStore.getState().session!.email).toBe("viewer@mabinsoft.dev");
   });
 });
 
@@ -58,7 +58,7 @@ describe("setPersona", () => {
   });
 
   it("keeps the rest of the session intact", () => {
-    signIn("amara.osei@threadline.dev", "viewer");
+    signIn("amara.osei@mabinsoft.dev", "viewer");
     const before = useAuthStore.getState().session!;
     useAuthStore.getState().setPersona("admin");
     expect(useAuthStore.getState().session!.email).toBe(before.email);

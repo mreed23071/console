@@ -40,7 +40,7 @@ const nameFromEmail = (email: string) =>
     .split(/[._-]/)
     .filter(Boolean)
     .map((s) => s[0]!.toUpperCase() + s.slice(1))
-    .join(" ") || "Threadline User";
+    .join(" ") || "Mabinsoft User";
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -49,8 +49,8 @@ export const useAuthStore = create<AuthState>()(
       signIn: (email, persona) =>
         set({
           session: {
-            email: email || `${persona}@threadline.dev`,
-            name: nameFromEmail(email || `${persona}@threadline.dev`),
+            email: email || `${persona}@mabinsoft.dev`,
+            name: nameFromEmail(email || `${persona}@mabinsoft.dev`),
             persona,
             signed_in_at: new Date().toISOString(),
           },
@@ -59,7 +59,7 @@ export const useAuthStore = create<AuthState>()(
       setPersona: (persona) =>
         set((state) => ({ session: state.session ? { ...state.session, persona } : null })),
     }),
-    { name: "threadline-auth" },
+    { name: "mabinsoft-auth" },
   ),
 );
 

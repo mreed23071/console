@@ -81,9 +81,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Threadline Console resolves scattered platform identities into one record and summarises recent activity.",
+          "Mabinsoft Console resolves scattered platform identities into one record and summarises recent activity.",
       },
-      { name: "author", content: "Threadline" },
+      { name: "author", content: "Mabinsoft" },
       { property: "og:title", content: i18n.t("nav:brand.console") },
       {
         property: "og:description",

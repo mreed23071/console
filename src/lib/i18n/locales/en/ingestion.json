@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Ingestion runs \u00b7 Threadline Console",
+    "title": "Ingestion runs \u00b7 Mabinsoft Console",
     "description": "Pipeline run history with fetch, filter, embed and persist counters and per-message decisions.",
     "ogDescription": "Every pipeline execution and its filtering decisions."
   },

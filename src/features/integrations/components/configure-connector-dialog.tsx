@@ -41,7 +41,7 @@ export function ConfigureConnectorDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="workspace">{t("integrations:configure.workspaceLabel")}</Label>
-            <Input id="workspace" defaultValue="threadline" />
+            <Input id="workspace" defaultValue="mabinsoft" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="poll">{t("integrations:configure.pollLabel")}</Label>

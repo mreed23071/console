@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Dashboard · Threadline Console",
+    "title": "Dashboard · Mabinsoft Console",
     "description": "Ingestion overview: people tracked, retained messages, connector health and recent pipeline runs.",
     "ogDescription": "Identity resolution and ingestion pipeline overview."
   },

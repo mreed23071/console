@@ -40,7 +40,7 @@ export function seedPeople(): Person[] {
     const active = i % 11 !== 5;
     return {
       id: `usr_${String(i + 1).padStart(4, "0")}`,
-      email: `${slugify(full_name)}@threadline.dev`,
+      email: `${slugify(full_name)}@mabinsoft.dev`,
       full_name,
       display_name: full_name.split(" ")[0]!,
       job_title,

@@ -1,7 +1,7 @@
 {
   "meta": {
-    "title": "System status · Threadline Console",
-    "description": "Health and readiness for the Threadline API, database and embedding worker, plus pipeline config.",
+    "title": "System status · Mabinsoft Console",
+    "description": "Health and readiness for the Mabinsoft API, database and embedding worker, plus pipeline config.",
     "ogDescription": "Live health, readiness and ingestion configuration."
   },
   "title": "Status",

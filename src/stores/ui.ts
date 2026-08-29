@@ -28,6 +28,6 @@ export const useUIStore = create<UIState>()(
       toggleTheme: () => set((s) => ({ theme: s.theme === "light" ? "dark" : "light" })),
       setLanguage: (language) => set({ language }),
     }),
-    { name: "threadline-ui" },
+    { name: "mabinsoft-ui" },
   ),
 );

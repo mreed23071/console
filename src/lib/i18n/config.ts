@@ -39,4 +39,4 @@ export type Namespace = (typeof NAMESPACES)[number];
 export const DEFAULT_NAMESPACE: Namespace = "common";
 
 /** Persisted language preference key, shared with the UI store. */
-export const LANGUAGE_STORAGE_KEY = "threadline-language";
+export const LANGUAGE_STORAGE_KEY = "mabinsoft-language";
