@@ -1,7 +1,8 @@
+import type { Control } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -9,73 +10,82 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { NO_PARENT, type NodeFormValues } from "@/features/organization/lib/schemas";
 import type { OrgNode } from "@/lib/api/types";
-
-/** Select needs a non-empty string value, so roots get a sentinel. */
-export const NO_PARENT = "__root__";
-
-export interface NodeFormState {
-  name: string;
-  subtitle: string;
-  parentId: string;
-}
 
 /**
  * Name, description and parent. The parent select is how the hierarchy is
  * built and rearranged — `parentOptions` is filtered by the caller so a node
  * can never be offered itself or its own descendants.
+ *
+ * Shared by AddNodeDialog and EditNodeDialog, each with their own
+ * `useForm<NodeFormValues>()` — this component only needs the resulting
+ * `control` to bind fields, not the form instance itself.
  */
 export function NodeFormFields({
-  idPrefix,
-  value,
-  onChange,
+  control,
   parentOptions,
 }: {
-  idPrefix: string;
-  value: NodeFormState;
-  onChange: (patch: Partial<NodeFormState>) => void;
+  control: Control<NodeFormValues>;
   parentOptions: OrgNode[];
 }) {
   const { t } = useTranslation("organization");
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-name`}>{t("field.name")}</Label>
-        <Input
-          id={`${idPrefix}-name`}
-          value={value.name}
-          onChange={(e) => onChange({ name: e.target.value })}
-          placeholder={t("field.namePlaceholder")}
-        />
-      </div>
+      <FormField
+        control={control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("field.name")}</FormLabel>
+            <FormControl>
+              <Input placeholder={t("field.namePlaceholder")} {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-subtitle`}>{t("field.subtitle")}</Label>
-        <Input
-          id={`${idPrefix}-subtitle`}
-          value={value.subtitle}
-          onChange={(e) => onChange({ subtitle: e.target.value })}
-          placeholder={t("field.subtitlePlaceholder")}
-        />
-      </div>
+      <FormField
+        control={control}
+        name="subtitle"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("field.subtitle")}</FormLabel>
+            <FormControl>
+              <Input placeholder={t("field.subtitlePlaceholder")} {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <div className="space-y-1.5">
-        <Label htmlFor={`${idPrefix}-parent`}>{t("field.parent")}</Label>
-        <Select value={value.parentId} onValueChange={(parentId) => onChange({ parentId })}>
-          <SelectTrigger id={`${idPrefix}-parent`}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NO_PARENT}>{t("field.noParent")}</SelectItem>
-            {parentOptions.map((node) => (
-              <SelectItem key={node.id} value={node.id}>
-                {node.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <FormField
+        control={control}
+        name="parentId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("field.parent")}</FormLabel>
+            <Select value={field.value} onValueChange={field.onChange}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value={NO_PARENT}>{t("field.noParent")}</SelectItem>
+                {parentOptions.map((node) => (
+                  <SelectItem key={node.id} value={node.id}>
+                    {node.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }

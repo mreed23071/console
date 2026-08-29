@@ -1,16 +1,55 @@
 /**
- * The endpoint layer, talking to the real FastAPI service.
+ * The endpoint layer, talking to the real FastAPI service through the
+ * generated OpenAPI client.
  *
  * Every function here has the same name, signature and return shape as its
  * counterpart in the mock modules one directory up - that is the whole contract
  * this layer honours, and it is what lets `endpoints/index.ts` choose between
  * them without anything in `features/` knowing which is in play.
  *
- * The bodies are deliberately thin: a verb, a path, and an adapter. When the
- * OpenAPI client is generated (`bun run openapi:sync`), each `get(...)` becomes
- * a call into the generated SDK and the adapters collapse to nothing.
+ * The bodies are deliberately thin: call the generated SDK function
+ * (`lib/api/generated/sdk.gen.ts`), adapt the response into the console's own
+ * vocabulary. `client.setConfig` (base URL, credential, error handling) and the
+ * `ApiError` type live in `../../http`, configured once at import time.
+ *
+ * `throwOnError: true` is passed at every call site, not just once via
+ * `client.setConfig`. The runtime respects the config-level default either
+ * way, but TypeScript narrows a call's return type from its own generic
+ * parameter, not from a runtime value it can't see - passing it explicitly is
+ * what turns `data: TData | undefined` into a guaranteed `TData`.
  */
-import { del, get, getPage, getRoot, patch, post } from "../../http";
+import {
+  assignOrgMember as apiAssignOrgMember,
+  browseMessages,
+  createAccount as apiCreateAccount,
+  createOrgNode as apiCreateOrgNode,
+  createUser as apiCreateUser,
+  createUserNote as apiCreateUserNote,
+  deleteAccount as apiDeleteAccount,
+  deleteNote,
+  deleteOrgNode as apiDeleteOrgNode,
+  forgetUser as apiForgetUser,
+  getIngestionConfig as apiGetIngestionConfig,
+  getRunStatus as apiGetRunStatus,
+  getUser as apiGetUser,
+  getUserSummary as apiGetUserSummary,
+  linkAccount as apiLinkAccount,
+  listConnectors,
+  listIngestionRuns,
+  listOrgNodes,
+  listUnlinkedAccounts as apiListUnlinkedAccounts,
+  listUserAccounts,
+  listUserMessages,
+  listUserNotes,
+  listUsers,
+  removeOrgMember as apiRemoveOrgMember,
+  runIngestion,
+  unlinkAccount as apiUnlinkAccount,
+  updateOrgNode as apiUpdateOrgNode,
+  updateUser as apiUpdateUser,
+} from "@/lib/api/generated/sdk.gen";
+
+import { getRoot } from "../../http";
 import type {
   ConnectedAccount,
   Connector,
@@ -38,27 +77,24 @@ import type { TriggerRunOptions } from "../ingestion";
 import type { CreateOrgNodeInput, UpdateOrgNodePatch } from "../org";
 import type { CreatePersonInput, ForgetUserResult } from "../people";
 import {
-  type ApiAccount,
-  type ApiMessage,
-  type ApiNote,
-  type ApiOrgNode,
-  type ApiPage,
-  type ApiSummary,
-  type ApiUnlinkedAccount,
-  type ApiUser,
-  type ApiUserListItem,
   toAccount,
+  toConnector,
+  toForgetResult,
+  toIngestionConfig,
+  toIngestionRun,
   toMessage,
   toNote,
   toOrgNode,
   toPage,
   toPerson,
   toPersonWithMeta,
+  toQueuedRun,
+  toRunProgress,
   toSummary,
   toUnlinkedAccount,
 } from "./adapters";
 
-// -- people ----------------------------------------------------------------
+// -- people ------------------------------------------------------------
 
 /**
  * Unpaged, deliberately - the org chart, sender-name lookups and the
@@ -66,7 +102,7 @@ import {
  * page of it. `getUsersPage` is the counterpart for the directory screen.
  */
 export const getUsers = async (): Promise<PersonWithMeta[]> =>
-  (await get<ApiUserListItem[]>("/users")).map(toPersonWithMeta);
+  (await listUsers({ throwOnError: true })).data.map(toPersonWithMeta);
 
 /**
  * One page of the directory, for a roster too large to browse in one table.
@@ -74,106 +110,140 @@ export const getUsers = async (): Promise<PersonWithMeta[]> =>
  * `/users` answers this with the same flat array either way - passing
  * `limit`/`offset` just windows it - and reports the total and whether more
  * remains on response headers rather than an envelope, so `getUsers` above
- * didn't have to change shape for callers that don't page.
+ * didn't have to change shape for callers that don't page. `response` (not
+ * just `data`) is where those headers live.
  */
 export const getUsersPage = async (page: PageParams): Promise<Page<PersonWithMeta>> => {
-  const { items, total, hasMore } = await getPage<ApiUserListItem[]>("/users", {
-    limit: page.limit,
-    offset: page.offset,
+  const { data, response } = await listUsers({
+    query: { limit: page.limit, offset: page.offset },
+    throwOnError: true,
   });
   return {
-    items: items.map(toPersonWithMeta),
-    total,
+    items: data.map(toPersonWithMeta),
+    total: Number(response.headers.get("X-Total-Count") ?? 0),
     limit: page.limit,
     offset: page.offset,
-    hasMore,
+    hasMore: response.headers.get("X-Has-More") === "true",
   };
 };
 
 export const getUser = async (id: string): Promise<Person> =>
-  toPerson(await get<ApiUser>(`/users/${id}`));
+  toPerson((await apiGetUser({ path: { user_id: id }, throwOnError: true })).data);
 
 export const getUserAccounts = async (id: string): Promise<ConnectedAccount[]> =>
-  (await get<ApiAccount[]>(`/users/${id}/accounts`)).map(toAccount);
+  (await listUserAccounts({ path: { user_id: id }, throwOnError: true })).data.map(toAccount);
 
 export const getUserMessages = async (id: string): Promise<Message[]> =>
-  (await get<ApiMessage[]>(`/users/${id}/messages`)).map(toMessage);
+  (await listUserMessages({ path: { user_id: id }, throwOnError: true })).data.map(toMessage);
 
 export const updateUser = async (id: string, changes: Partial<Person>): Promise<Person> =>
-  toPerson(await patch<ApiUser>(`/users/${id}`, changes));
+  toPerson(
+    (await apiUpdateUser({ path: { user_id: id }, body: changes, throwOnError: true })).data,
+  );
 
 export const createUser = async (input: CreatePersonInput): Promise<Person> =>
-  toPerson(await post<ApiUser>("/users", input));
+  toPerson((await apiCreateUser({ body: input, throwOnError: true })).data);
 
-export const forgetUser = (id: string): Promise<ForgetUserResult> =>
-  del<ForgetUserResult>(`/users/${id}`);
+export const forgetUser = async (id: string): Promise<ForgetUserResult> =>
+  toForgetResult((await apiForgetUser({ path: { user_id: id }, throwOnError: true })).data);
 
-// -- notes -----------------------------------------------------------------
+// -- notes ---------------------------------------------------------------
 
 export const getUserNotes = async (id: string): Promise<PersonNote[]> =>
-  (await get<ApiNote[]>(`/users/${id}/notes`)).map(toNote);
+  (await listUserNotes({ path: { user_id: id }, throwOnError: true })).data.map(toNote);
 
 export const createUserNote = async (
   id: string,
   body: string,
   author: string,
-): Promise<PersonNote> => toNote(await post<ApiNote>(`/users/${id}/notes`, { body, author }));
+): Promise<PersonNote> =>
+  toNote(
+    (
+      await apiCreateUserNote({
+        path: { user_id: id },
+        body: { body, author },
+        throwOnError: true,
+      })
+    ).data,
+  );
 
-export const deleteUserNote = (noteId: string): Promise<{ id: string }> =>
-  del<{ id: string }>(`/notes/${noteId}`);
+export const deleteUserNote = async (noteId: string): Promise<{ id: string }> =>
+  (await deleteNote({ path: { note_id: noteId }, throwOnError: true })).data;
 
 // -- accounts --------------------------------------------------------------
 
 export const getUnlinkedAccounts = async (): Promise<UnlinkedAccount[]> =>
-  (await get<ApiUnlinkedAccount[]>("/accounts/unlinked")).map(toUnlinkedAccount);
+  (await apiListUnlinkedAccounts({ throwOnError: true })).data.map(toUnlinkedAccount);
 
 export const linkAccount = async (accountId: string, userId: string): Promise<ConnectedAccount> =>
-  toAccount(await post<ApiAccount>(`/accounts/${accountId}/link`, { user_id: userId }));
+  toAccount(
+    (
+      await apiLinkAccount({
+        path: { account_id: accountId },
+        body: { user_id: userId },
+        throwOnError: true,
+      })
+    ).data,
+  );
 
 export const unlinkAccount = async (accountId: string): Promise<ConnectedAccount> =>
-  toAccount(await post<ApiAccount>(`/accounts/${accountId}/unlink`));
+  toAccount((await apiUnlinkAccount({ path: { account_id: accountId }, throwOnError: true })).data);
 
-export const deleteAccount = (accountId: string): Promise<{ deleted_messages: number }> =>
-  del<{ deleted_messages: number }>(`/accounts/${accountId}`);
+export const deleteAccount = async (accountId: string): Promise<{ deleted_messages: number }> =>
+  (await apiDeleteAccount({ path: { account_id: accountId }, throwOnError: true })).data;
 
 export const createAccount = async (input: CreateAccountInput): Promise<ConnectedAccount> =>
-  toAccount(await post<ApiAccount>("/accounts", input));
+  toAccount((await apiCreateAccount({ body: input, throwOnError: true })).data);
 
-// -- messages --------------------------------------------------------------
+// -- messages ----------------------------------------------------------
 
 /**
  * The console's "all" sentinel is dropped rather than sent.
  *
- * The API expresses "do not narrow by this" as an absent parameter; the console
- * expresses it as the string "all". Translating here keeps that vocabulary out
- * of the API, where it would have to be special-cased in every filter.
+ * The API expresses "do not narrow by this" as an absent parameter; the
+ * console expresses it as the string "all". Translating here keeps that
+ * vocabulary out of the API, where it would have to be special-cased in
+ * every filter.
  */
 export const getMessages = async (
   filters: MessageFilters = {},
   page: PageParams = { limit: DEFAULT_PAGE_SIZE, offset: 0 },
-): Promise<Page<Message>> =>
-  toPage(
-    await get<ApiPage<ApiMessage>>("/messages", {
-      platform: filters.platform === "all" ? undefined : filters.platform,
-      category: filters.category === "all" ? undefined : filters.category,
-      sent_from: filters.from,
-      sent_to: filters.to,
-      search: filters.search,
+): Promise<Page<Message>> => {
+  const { data } = await browseMessages({
+    query: {
+      // `exactOptionalPropertyTypes` + the generated query type (`Platform |
+      // null`, never `undefined`) means "narrow by nothing" has to be sent as
+      // `null`, not omitted-via-undefined.
+      platform: filters.platform === "all" ? null : (filters.platform ?? null),
+      category: filters.category === "all" ? null : (filters.category ?? null),
+      sent_from: filters.from ?? null,
+      sent_to: filters.to ?? null,
+      search: filters.search ?? null,
       limit: page.limit,
       offset: page.offset,
-    }),
-    toMessage,
-  );
+    },
+    throwOnError: true,
+  });
+  return toPage(data, toMessage);
+};
 
-// -- summaries -------------------------------------------------------------
+// -- summaries -----------------------------------------------------------
 
 const summaryQuery = (range?: SummaryRange) => ({
-  range_from: range?.from,
-  range_to: range?.to,
+  range_from: range?.from ?? null,
+  range_to: range?.to ?? null,
 });
 
 export const getUserSummary = async (id: string, range?: SummaryRange): Promise<Summary> =>
-  toSummary(await get<ApiSummary>(`/insights/users/${id}/summary`, summaryQuery(range)));
+  toSummary(
+    (
+      await apiGetUserSummary({
+        path: { user_id: id },
+        query: summaryQuery(range),
+        throwOnError: true,
+      })
+    ).data,
+  );
 
 /**
  * Identical to `getUserSummary`, deliberately.
@@ -186,13 +256,13 @@ export const getUserSummary = async (id: string, range?: SummaryRange): Promise<
  */
 export const regenerateUserSummary = getUserSummary;
 
-// -- organization ----------------------------------------------------------
+// -- organization --------------------------------------------------------
 
 export const getOrgNodes = async (): Promise<OrgNode[]> =>
-  (await get<ApiOrgNode[]>("/org/nodes")).map(toOrgNode);
+  (await listOrgNodes({ throwOnError: true })).data.map(toOrgNode);
 
 export const createOrgNode = async (input: CreateOrgNodeInput): Promise<OrgNode> =>
-  toOrgNode(await post<ApiOrgNode>("/org/nodes", input));
+  toOrgNode((await apiCreateOrgNode({ body: input, throwOnError: true })).data);
 
 /**
  * `reparent` is derived from whether the caller mentioned `parent_id` at all.
@@ -205,27 +275,48 @@ export const createOrgNode = async (input: CreateOrgNodeInput): Promise<OrgNode>
  */
 export const updateOrgNode = async (id: string, changes: UpdateOrgNodePatch): Promise<OrgNode> =>
   toOrgNode(
-    await patch<ApiOrgNode>(`/org/nodes/${id}`, {
-      ...changes,
-      reparent: "parent_id" in changes,
-    }),
+    (
+      await apiUpdateOrgNode({
+        path: { node_id: id },
+        body: { ...changes, reparent: "parent_id" in changes },
+        throwOnError: true,
+      })
+    ).data,
   );
 
-export const deleteOrgNode = (id: string): Promise<{ id: string; promoted: number }> =>
-  del<{ id: string; promoted: number }>(`/org/nodes/${id}`);
+export const deleteOrgNode = async (id: string): Promise<{ id: string; promoted: number }> =>
+  (await apiDeleteOrgNode({ path: { node_id: id }, throwOnError: true })).data;
 
 export const assignOrgMember = async (nodeId: string, userId: string): Promise<OrgNode> =>
-  toOrgNode(await post<ApiOrgNode>(`/org/nodes/${nodeId}/members`, { user_id: userId }));
+  toOrgNode(
+    (
+      await apiAssignOrgMember({
+        path: { node_id: nodeId },
+        body: { user_id: userId },
+        throwOnError: true,
+      })
+    ).data,
+  );
 
 export const removeOrgMember = async (nodeId: string, userId: string): Promise<OrgNode> =>
-  toOrgNode(await del<ApiOrgNode>(`/org/nodes/${nodeId}/members/${userId}`));
+  toOrgNode(
+    (
+      await apiRemoveOrgMember({
+        path: { node_id: nodeId, user_id: userId },
+        throwOnError: true,
+      })
+    ).data,
+  );
 
 // -- platform --------------------------------------------------------------
 
-export const getConnectors = (): Promise<Connector[]> => get<Connector[]>("/connectors");
+export const getConnectors = async (): Promise<Connector[]> =>
+  (await listConnectors({ throwOnError: true })).data.map(toConnector);
 
-export const getIngestionRuns = (platform?: Platform): Promise<IngestionRun[]> =>
-  get<IngestionRun[]>("/ingestion/runs", { platform });
+export const getIngestionRuns = async (platform?: Platform): Promise<IngestionRun[]> =>
+  (await listIngestionRuns({ query: { platform: platform ?? null }, throwOnError: true })).data.map(
+    toIngestionRun,
+  );
 
 /**
  * Queues a run; it does not wait for one.
@@ -234,16 +325,25 @@ export const getIngestionRuns = (platform?: Platform): Promise<IngestionRun[]> =
  * minutes, so the result is polled via `getRunStatus` rather than awaited on
  * an open connection.
  */
-export const triggerIngestionRun = (
+export const triggerIngestionRun = async (
   platform: Platform,
   options: TriggerRunOptions = {},
-): Promise<QueuedRun> => post<QueuedRun>(`/ingestion/runs/${platform}`, options);
+): Promise<QueuedRun> =>
+  toQueuedRun((await runIngestion({ path: { platform }, body: options, throwOnError: true })).data);
 
-export const getRunStatus = (platform: Platform, runId: string): Promise<RunProgress> =>
-  get<RunProgress>(`/ingestion/runs/${platform}/${runId}`);
+export const getRunStatus = async (platform: Platform, runId: string): Promise<RunProgress> =>
+  toRunProgress(
+    (await apiGetRunStatus({ path: { platform, run_id: runId }, throwOnError: true })).data,
+  );
 
-export const getIngestionConfig = (platform: Platform): Promise<IngestionConfig> =>
-  get<IngestionConfig>(`/ingestion/config/${platform}`);
+export const getIngestionConfig = async (platform: Platform): Promise<IngestionConfig> =>
+  toIngestionConfig((await apiGetIngestionConfig({ path: { platform }, throwOnError: true })).data);
+
+// -- unversioned probes ------------------------------------------------
+//
+// `/health` and `/ready` are mounted outside `API_VERSIONS` on the backend, so
+// they never appear in the exported OpenAPI schema and have no generated
+// operation to call - see `getRoot`'s docstring in `../../http`.
 
 export const getHealth = (): Promise<HealthResponse> => getRoot<HealthResponse>("/health");
 

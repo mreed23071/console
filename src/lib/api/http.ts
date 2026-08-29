@@ -1,20 +1,59 @@
 /**
- * The transport the endpoint layer uses to reach the FastAPI service.
+ * Configures the generated OpenAPI client, and the app's error type.
  *
- * Deliberately small, and deliberately temporary. The API publishes an OpenAPI
- * schema and the repository is configured to generate a typed client from it
- * (`bun run openapi:sync`); once that client exists this file is replaced by it
- * and the endpoint modules change one import. Until the schema has been
- * exported from a running app, this keeps the console able to talk to the API
- * without a second hand-maintained copy of every request shape - each function
- * here names a path and a verb and nothing else.
+ * The generated client (`bun run openapi:sync`, output in `lib/api/generated/`)
+ * owns the actual transport now — this file no longer hand-rolls `fetch`. What
+ * it still owns:
  *
- * What it does own, and what the generated client will inherit:
- *
- * * one base URL, read from the environment,
- * * the API's error envelope turned into a typed `ApiError`,
- * * query strings that omit undefined values rather than sending "undefined".
+ * * pointing the generated client at the right base URL and credential,
+ * * turning the API's error envelope into a typed `ApiError` once, via the
+ *   client's error interceptor, so every endpoint function gets that behavior
+ *   for free instead of repeating a try/catch,
+ * * `getRoot`, a small hand-rolled `fetch` for the two probes
+ *   (`/health`, `/ready`) that live outside the versioned API and therefore
+ *   have no operation in the generated client to call.
  */
+import { client } from "@/lib/api/generated/client.gen";
+
+/** Where the API lives. Trailing slashes are trimmed so joins stay predictable. */
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "/api/v1").replace(/\/+$/, "");
+
+/** The origin, for the probes that live outside the versioned prefix. */
+export const API_ROOT_URL = API_BASE_URL.replace(/\/api\/v\d+$/, "");
+
+/**
+ * Credential for the routes that are still scope-protected.
+ *
+ * Most of the API is deliberately open while the platforms are wired together,
+ * but the ingestion routes are not — they were protected before this work
+ * started and opening them to get a button working would be the wrong trade.
+ * Set `VITE_API_KEY` to a key with `ingest:run` and `ingest:read` (the
+ * backend's `.env.example` ships one) and those routes work; leave it unset and
+ * they answer 401, which is the honest result.
+ *
+ * Sent as a default header rather than through the generated client's `auth`
+ * option: the schema declares two alternative security schemes per operation
+ * (`X-API-Key`, `X-Dev-User`), and resolving "which one, from where" through
+ * that machinery buys nothing here — a static header applied to every request
+ * is the same behavior the hand-rolled transport had before this file existed.
+ */
+const API_KEY: string | undefined = import.meta.env.VITE_API_KEY;
+
+/**
+ * `API_ROOT_URL`, not `API_BASE_URL`, is what the generated client's `baseUrl`
+ * needs: every operation URL in `lib/api/generated/sdk.gen.ts` is already the
+ * full path from the OpenAPI schema, version prefix included (e.g.
+ * `"/api/v1/users"`). Configuring `baseUrl: API_BASE_URL` (which already ends
+ * in `/api/v1`) would double it up into `/api/v1/api/v1/users` and 404 on
+ * every single request — this bit a live smoke test against the real backend
+ * during the migration to the generated client, which is exactly the kind of
+ * mistake this comment exists to keep from happening twice.
+ */
+client.setConfig({
+  baseUrl: API_ROOT_URL,
+  throwOnError: true,
+  ...(API_KEY ? { headers: { "X-API-Key": API_KEY } } : {}),
+});
 
 /** The error envelope every failing route returns. */
 export interface ApiErrorBody {
@@ -54,144 +93,38 @@ export class ApiError extends Error {
   }
 }
 
-/** Where the API lives. Trailing slashes are trimmed so joins stay predictable. */
-export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "/api/v1").replace(/\/+$/, "");
-
 /**
- * Credential for the routes that are still scope-protected.
+ * Runs once for every non-2xx response, on every generated SDK call.
  *
- * Most of the API is deliberately open while the platforms are wired together,
- * but the ingestion routes are not — they were protected before this work
- * started and opening them to get a button working would be the wrong trade.
- * Set `VITE_API_KEY` to a key with `ingest:run` and `ingest:read` (the
- * backend's `.env.example` ships one) and those routes work; leave it unset and
- * they answer 401, which is the honest result.
+ * With `throwOnError: true`, the client throws whatever this returns — so
+ * this is the one place a raw parsed error body becomes an `ApiError`
+ * instance, instead of every endpoint function doing it themselves.
  */
-const API_KEY = import.meta.env.VITE_API_KEY;
-
-/** The origin, for the probes that live outside the versioned prefix. */
-export const API_ROOT_URL = API_BASE_URL.replace(/\/api\/v\d+$/, "");
-
-export type QueryValue = string | number | boolean | undefined | null;
+client.interceptors.error.use((error, response) => {
+  const body = (error ?? null) as ApiErrorBody | null;
+  return new ApiError(response.status, body, `${response.status} request failed`);
+});
 
 /**
- * Builds a query string, dropping anything unset.
- *
- * Without this, an optional filter left empty would be sent as the literal
- * string "undefined" and the API would try to parse it — a class of bug that
- * only shows up when a user clears a filter.
+ * GET against the origin rather than the versioned prefix — for `/health` and
+ * `/ready`, which are mounted outside `API_VERSIONS` on the backend and so
+ * never appear in the exported OpenAPI schema. Everything schema-backed goes
+ * through the generated client instead; this is the one place a request is
+ * still built by hand, because there is nothing to generate it from.
  */
-function queryString(params: Record<string, QueryValue> | undefined): string {
-  if (!params) return "";
-  const search = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value !== undefined && value !== null && value !== "") {
-      search.append(key, String(value));
-    }
-  }
-  const rendered = search.toString();
-  return rendered ? `?${rendered}` : "";
-}
-
-interface RequestOptions {
-  query?: Record<string, QueryValue>;
-  body?: unknown;
-  signal?: AbortSignal;
-  /** Treat `path` as complete, for the probes outside the versioned prefix. */
-  absolute?: boolean;
-}
-
-/**
- * Issue one request and return the raw response, or throw `ApiError` for any
- * non-2xx status. `request` and `getPage` both build on this; the former
- * discards the response after parsing its body, the latter also needs its
- * headers.
- */
-async function fetchResponse(
-  method: string,
-  path: string,
-  options: RequestOptions = {},
-): Promise<Response> {
+export async function getRoot<T>(path: string): Promise<T> {
   const headers: Record<string, string> = {};
-  if (options.body !== undefined) headers["Content-Type"] = "application/json";
   if (API_KEY) headers["X-API-Key"] = API_KEY;
 
-  const base = options.absolute ? "" : API_BASE_URL;
-
-  // Built up rather than declared inline: `exactOptionalPropertyTypes` draws a
-  // distinction between "absent" and "present but undefined", and `fetch`
-  // accepts the first but not the second.
-  const init: RequestInit = { method, headers };
-  if (options.body !== undefined) init.body = JSON.stringify(options.body);
-  if (options.signal) init.signal = options.signal;
-
-  const response = await fetch(`${base}${path}${queryString(options.query)}`, init);
-
+  const response = await fetch(`${API_ROOT_URL}${path}`, { headers });
   if (!response.ok) {
-    // A gateway or a proxy can fail before FastAPI is reached, in which case
-    // the body is HTML rather than the envelope. Parsing defensively keeps the
-    // thrown error useful instead of replacing it with a JSON syntax error.
     let body: ApiErrorBody | null = null;
     try {
       body = (await response.json()) as ApiErrorBody;
     } catch {
       body = null;
     }
-    throw new ApiError(response.status, body, `${method} ${path} failed`);
+    throw new ApiError(response.status, body, `GET ${path} failed`);
   }
-
-  return response;
-}
-
-/**
- * Issue one request and return its parsed body.
- *
- * Throws `ApiError` for any non-2xx response, so callers can use plain
- * `await` and let React Query surface the failure rather than checking a
- * status code at thirty call sites.
- */
-export async function request<T>(
-  method: string,
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
-  const response = await fetchResponse(method, path, options);
-  if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
 }
-
-export const get = <T>(path: string, query?: Record<string, QueryValue>): Promise<T> =>
-  request<T>("GET", path, query === undefined ? {} : { query });
-
-/**
- * A route whose body stays a flat array either way, but whose pagination
- * metadata (when `query` asks for a page) rides on `X-Total-Count` /
- * `X-Has-More` response headers instead of an envelope - see `GET /users`.
- * Absent headers (the unpaged response) read back as `total: 0, hasMore:
- * false`; callers that asked for a page always get real values back, since
- * the API sets both headers whenever a page was requested.
- */
-export async function getPage<T>(
-  path: string,
-  query?: Record<string, QueryValue>,
-): Promise<{ items: T; total: number; hasMore: boolean }> {
-  const response = await fetchResponse("GET", path, query === undefined ? {} : { query });
-  const items = (await response.json()) as T;
-  return {
-    items,
-    total: Number(response.headers.get("X-Total-Count") ?? 0),
-    hasMore: response.headers.get("X-Has-More") === "true",
-  };
-}
-
-export const post = <T>(path: string, body?: unknown): Promise<T> =>
-  request<T>("POST", path, { body: body ?? {} });
-
-export const patch = <T>(path: string, body: unknown): Promise<T> =>
-  request<T>("PATCH", path, { body });
-
-export const del = <T>(path: string): Promise<T> => request<T>("DELETE", path);
-
-/** GET against the origin rather than the versioned prefix. */
-export const getRoot = <T>(path: string): Promise<T> =>
-  request<T>("GET", `${API_ROOT_URL}${path}`, { absolute: true });

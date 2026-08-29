@@ -1,7 +1,7 @@
 /**
  * Regenerates the API's demo dataset from this console's mock tables.
  *
- *   bun run scripts/dump-fixtures.ts ../mabisoft/src/app/seed/fixtures.json
+ *   bun run scripts/dump-fixtures.ts ../api/src/app/seed/fixtures.json
  *
  * The mock database is generated from a seeded pseudo-random generator with a
  * fixed `NOW`, so this produces byte-identical output on every machine and every
@@ -23,7 +23,7 @@ import {
   personNotes,
 } from "../src/lib/api/mock";
 
-const DEFAULT_OUT = "../mabisoft/src/app/seed/fixtures.json";
+const DEFAULT_OUT = "../api/src/app/seed/fixtures.json";
 
 const fixtures = {
   generated_from: "console mock database (seeded RNG 20260826, fixed NOW 2026-08-26T18:00:00Z)",

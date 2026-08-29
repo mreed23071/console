@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -11,16 +12,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Form } from "@/components/ui/form";
 import { useUpdateOrgNode } from "@/features/organization/api/mutations";
+import { NodeFormFields } from "@/features/organization/components/node-form-fields";
 import {
   NO_PARENT,
-  NodeFormFields,
-  type NodeFormState,
-} from "@/features/organization/components/node-form-fields";
+  nodeFormSchema,
+  type NodeFormValues,
+} from "@/features/organization/lib/schemas";
 import type { OrgNode } from "@/lib/api/types";
 import { eligibleParents } from "@/lib/org-tree";
 
-const formFor = (node: OrgNode): NodeFormState => ({
+const formValuesFor = (node: OrgNode): NodeFormValues => ({
   name: node.name,
   subtitle: node.subtitle,
   parentId: node.parent_id ?? NO_PARENT,
@@ -43,27 +46,25 @@ export function EditNodeDialog({
 }) {
   const { t } = useTranslation(["organization", "common"]);
   const update = useUpdateOrgNode();
-  const [form, setForm] = useState<NodeFormState>(() => formFor(node));
+  const form = useForm<NodeFormValues>({
+    resolver: zodResolver(nodeFormSchema(t)),
+    defaultValues: formValuesFor(node),
+  });
 
-  useEffect(() => {
-    if (open) setForm(formFor(node));
-  }, [open, node]);
-
-  const name = form.name.trim();
+  const seed = () => form.reset(formValuesFor(node));
 
   // Offering a node its own subtree would let the user build a cycle. The API
   // rejects one too; this keeps it from being presented as a valid choice.
   const parentOptions = eligibleParents(nodes, node.id);
 
-  const submit = () => {
-    if (!name) return;
+  const onSubmit = form.handleSubmit((values) => {
     update.mutate(
       {
         id: node.id,
         patch: {
-          name,
-          subtitle: form.subtitle.trim(),
-          parent_id: form.parentId === NO_PARENT ? null : form.parentId,
+          name: values.name,
+          subtitle: values.subtitle,
+          parent_id: values.parentId === NO_PARENT ? null : values.parentId,
         },
       },
       {
@@ -74,28 +75,33 @@ export function EditNodeDialog({
         onError: () => toast.error(t("organization:edit.error")),
       },
     );
-  };
+  });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (v) seed();
+        onOpenChange(v);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("organization:edit.title")}</DialogTitle>
           <DialogDescription>{t("organization:edit.description")}</DialogDescription>
         </DialogHeader>
 
-        <NodeFormFields
-          idPrefix="org-edit"
-          value={form}
-          onChange={(patch) => setForm((f) => ({ ...f, ...patch }))}
-          parentOptions={parentOptions}
-        />
+        <Form {...form}>
+          <form onSubmit={onSubmit}>
+            <NodeFormFields control={form.control} parentOptions={parentOptions} />
+          </form>
+        </Form>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             {t("common:action.cancel")}
           </Button>
-          <Button onClick={submit} disabled={!name || update.isPending}>
+          <Button onClick={onSubmit} disabled={update.isPending}>
             {t("common:action.saveChanges")}
           </Button>
         </DialogFooter>
