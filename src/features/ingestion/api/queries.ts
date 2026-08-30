@@ -41,12 +41,29 @@ export function useIngestionConfig(platform: Platform) {
  * a longer interval than `useTrackedRun`'s 1.5s: this is a background
  * indicator glanced at from any screen, not a progress bar someone is
  * watching, so it doesn't need to feel instantaneous.
+ *
+ * Each call to this endpoint costs the server one `list_workflows` plus a
+ * `progress` query per running run, against a worker configured to run one
+ * activity at a time. A flat 5s poll from every open tab, forever, is a lot of
+ * that for a status dot. Three things bring it down, and the server-side TTL
+ * cache in `gateway.list_active_runs` bounds the damage regardless of what any
+ * client does:
+ *
+ *   - hidden tabs stop polling entirely (`refetchIntervalInBackground` is left
+ *     off, React Query's default, and stated here so nobody turns it on
+ *     without meaning to);
+ *   - an idle console backs off to 15s and only tightens to 5s once something
+ *     is actually running;
+ *   - every consumer shares this one hook, so React Query dedups them into a
+ *     single request. Keep it that way: a component that builds its own
+ *     variant of `queryKeys.ingestion.active()` would poll separately.
  */
 export function useActiveRuns() {
   return useQuery({
     queryKey: queryKeys.ingestion.active(),
     queryFn: getActiveRuns,
-    refetchInterval: 5000,
+    refetchInterval: (query) => (query.state.data?.count ? 5000 : 15000),
+    refetchIntervalInBackground: false,
   });
 }
 

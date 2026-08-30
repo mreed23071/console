@@ -19,10 +19,42 @@ COPY package.json bun.lock ./
 # resolving, so the image matches local development and CI byte for byte.
 RUN bun install --frozen-lockfile
 
-COPY . .
+COPY --chown=bun:bun . .
+
+# Everything under /app, not just what COPY brought in: `bun install` above ran
+# as root and left node_modules root-owned, and that directory is what seeds the
+# named volume on first creation.
+RUN chown -R bun:bun /app
+
+# Run the dev server as the image's built-in unprivileged user rather than root.
+# This container bind-mounts the developer's working tree; as root it could
+# rewrite any file in it, and anything that reached the dev server — which
+# serves and transforms files on demand — would be acting as root against the
+# host checkout.
+#
+# Two ownership facts this depends on, both verified against `oven/bun:1-alpine`:
+#
+#   1. The image ships a `bun` user and group at uid/gid 1000. The
+#      `ui-node-modules` named volume is mounted over /app/node_modules and, on
+#      first creation only, Docker seeds it from the image with the image's
+#      ownership — which the chown above has made `bun`-owned. So a runtime
+#      `bun install` and Vite's dependency-optimizer writes to
+#      node_modules/.vite both keep working.
+#   2. The host bind-mount of the source tree appears with the host user's uid.
+#      On Linux with the usual uid 1000 that matches `bun` exactly. A
+#      mismatched-uid host still functions: Vite needs only read access to the
+#      sources, and its writes go to node_modules/.vite, which lives in the
+#      named volume rather than the bind mount.
+#
+# Because of (1), an existing volume created before this change still carries
+# root ownership. Drop it once — `docker volume rm mabinsoft_ui-node-modules`,
+# or `docker compose down -v` — so it re-seeds.
+USER bun
 
 EXPOSE 8080
 
 # --host binds to all interfaces; without it Vite listens on 127.0.0.1 only and
-# the published port answers nothing.
+# the published port answers nothing. This is the container's interfaces, not
+# the host's: what the host exposes is controlled by the loopback-scoped `ports:`
+# binding in docker-compose.yml, which is the right layer for that decision.
 CMD ["bun", "run", "dev", "--host", "0.0.0.0", "--port", "8080"]
